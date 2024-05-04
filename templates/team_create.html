@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Create and Manage Teams</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'pages/team_create.css' %}" />
+  </head>
+  <body>
+    {% include 'header.html' %}
+
+    <form method="post" action="{% url 'team_create' %}">
+      {% csrf_token %}
+      <input type="text" name="team_name" placeholder="Enter Team Name" />
+      <button type="submit">Add Team</button>
+    </form>
+    
+    <!-- Reset Players Button -->
+    <form method="post" action="{% url 'reset_players' %}" style="margin-top: 20px;">
+      {% csrf_token %}
+      <button type="submit">Reset Players</button>
+    </form>
+    
+    <h1>Teams</h1>
+    <ul>
+      {% for team in teams %}
+        <li>
+          {{ team.name }}
+          <form method="post" action="{% url 'delete_team' team.id %}" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit">Delete</button>
+          </form>
+        </li> {% empty %}
+        <li>No teams have been added yet.</li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>

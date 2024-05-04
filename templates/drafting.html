@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Fantasy Football League</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'pages/drafting.css' %}" />
+  </head>
+  <body>
+    {% include 'header.html' %}
+
+    <!-- Creating the drafting page -->
+    <div class="container">
+      <div class="left-column">
+        <div class="team-roster">
+          <h2>Player's Drafted</h2>
+          {% for drafted in draft_list %}
+            <div class="position">{{ drafted }}</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="middle-column">
+        <!-- Main player info placeholder -->
+        <div class="main-player-info">
+          <img id="player-portrait" class="player-portrait" src="{% static 'images/default_portrait.png' %}" alt="" />
+          <h2 id="player-name">Select a Player</h2>
+          <p id="player-details"></p>
+          <button type="button" class="draft-btn" data-player-id="{{ player.id }}" data-player-name="{{ player.name }}" data-player-position="{{ player.position }}" data-player-points="{{ player.lastSeasonPts }}" data-portrait-id="{{ player.portraitId }}">Draft</button>
+        </div>
+        <div class="search-container">
+          <input type="text" id="searchInput" onkeyup="searchPlayers()" placeholder="Search for players..." />
+          <select id="positionFilter" onchange="filterTableByPosition()" placeholder="Search Positions">
+            <option value="">All</option>
+            <option value="QB">QB</option>
+            <option value="HB">HB</option>
+            <option value="WR">WR</option>
+            <option value="TE">TE</option>
+          </select>        
+        </div>
+        <div class="draft-main">
+          <table id="draft-table">
+            <tr>
+              <th></th>
+              <th onclick="sortTable(0)">Name</th>
+              <th onclick="sortTable(1)">Team</th>
+              <th onclick="sortTable(2)">Position</th>
+              <th onclick="sortTable(3)">Last Season Points</th>
+              <th></th>
+            </tr>
+            {% for player in players %}
+              {% if not player.drafted %}
+                <tr>
+                  <td>
+                    <img class="player-portrait" src="https://madden-assets-cdn.pulse.ea.com/madden24/portraits/256/{{ player.portraitId }}.png" alt="{{ player.name }}" />
+                  </td>
+                  <td>{{ player.name }}</td>
+                  <td>{{ player.team }}</td>
+                  <td>{{ player.position }}</td>
+                  <td>{{ player.lastSeasonPts }}</td>
+                  <td>
+                    <button type="button" class="select-btn" onclick="selectPlayer('{{ player.name }}', '{{ player.rosterId }}', '{{ player.team }}', '{{ player.position }}', '{{ player.lastSeasonPts }}', '{{ player.portraitId }}', '{{ player.id }}')">Select</button>
+                  </td>
+                </tr>
+              {% endif %}
+              {% empty %}
+              <tr>
+                <td colspan="6">No players available for drafting.</td>
+              </tr>
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+      <div class="right-column">
+        <div class="team-roster">
+          <h2>{{ fantasy_team }}'s Roster</h2>
+          {% for position in positions %}
+            <!-- Assuming 'positions' is the context variable passed from the view -->
+            <div id="{{ position.position }}" class="position">
+              {{ position.position }}: <span class="player-name">{{ position.player|default:'' }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    <script>
+      function selectPlayer(name, rosterId, team, position, points, portraitId, playerId) {
+        // Add playerId as a parameter
+      
+        // Update the main player info
+        document.getElementById('player-name').innerText = name
+        document.getElementById('player-details').innerText = team + ' - ' + position + ' | Last Season Points: ' + points
+      
+        var portraitUrl = 'https://madden-assets-cdn.pulse.ea.com/madden24/portraits/256/' + portraitId + '.png'
+        document.getElementById('player-portrait').src = portraitUrl
+      
+        // Assuming getTeamColor is correctly defined and available
+        const teamColor = getTeamColor(team)
+        const mainPlayerInfo = document.querySelector('.main-player-info')
+        mainPlayerInfo.style.backgroundColor = teamColor
+      
+        // Calculate and set font color based on background color brightness
+        const fontColor = getFontColorByBackground(teamColor)
+        mainPlayerInfo.style.color = fontColor
+      
+        // Set the draft button's data attributes
+        var draftBtn = document.querySelector('.draft-btn')
+        draftBtn.setAttribute('data-player-id', playerId) // Ensure this uses the correct variable
+        draftBtn.setAttribute('data-player-name', name)
+        draftBtn.setAttribute('data-player-position', position)
+      
+        console.log(rosterId)
+      }
+      
+      function getFontColorByBackground(backgroundColor) {
+        // Calculate brightness of the background
+        const color = backgroundColor.charAt(0) === '#' ? backgroundColor.substring(1, 7) : backgroundColor
+        const r = parseInt(color.substring(0, 2), 16) // hex to decimal
+        const g = parseInt(color.substring(2, 4), 16) // hex to decimal
+        const b = parseInt(color.substring(4, 6), 16) // hex to decimal
+      
+        // Using the YIQ equation to determine brightness of the background
+        const yiq = (r * 299 + g * 587 + b * 114) / 1000
+      
+        // Explicitly use an if-else statement to set font color
+        if (yiq >= 128) {
+          return 'black' // If background is bright, use black font
+        } else {
+          return 'white' // If background is dark, use white font
+        }
+      }
+      
+      // This is a placeholder function. You need to replace it with your actual function that retrieves the team color.
+      function getTeamColor(teamName) {
+        // Example implementation. You should replace it with your own logic.
+        const nflTeamColors = {
+          Cardinals: '#97233F',
+          Falcons: '#A71930',
+          Ravens: '#241773',
+          Bills: '#00338D',
+          Panthers: '#0085CA',
+          Bears: '#0B162A',
+          Bengals: '#FB4F14',
+          Browns: '#311D00',
+          Cowboys: '#041E42',
+          Broncos: '#FB4F14',
+          Lions: '#0076B6',
+          Packers: '#203731',
+          Texans: '#03202F',
+          Colts: '#002C5F',
+          Jaguars: '#006778',
+          Chiefs: '#E31837',
+          Raiders: '#A5ACAF',
+          Chargers: '#0080C6',
+          Rams: '#002244',
+          Dolphins: '#008E97',
+          Vikings: '#4F2683',
+          Patriots: '#002244',
+          Saints: '#D3BC8D',
+          Giants: '#0B2265',
+          Jets: '#125740',
+          Eagles: '#004C54',
+          Steelers: '#FFB612',
+          '49ers': '#AA0000',
+          Seahawks: '#002244',
+          Buccaneers: '#D50A0A',
+          Titans: '#0C2340',
+          Commanders: '#773141'
+        }
+        return nflTeamColors[teamName] || '#FFFFFF' // Default color if team not found
+      }
+      
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelector('.draft-btn').addEventListener('click', function (event) {
+          const btn = event.target
+          const playerId = btn.getAttribute('data-player-id')
+          const playerName = btn.getAttribute('data-player-name')
+          const playerPosition = btn.getAttribute('data-player-position')
+          const playerPoints = btn.getAttribute('data-player-points')
+          const portraitId = btn.getAttribute('data-portrait-id')
+      
+          draftPlayer(playerId, playerName, playerPosition)
+        })
+      })
+      
+      // DRAFTING A PLAYER
+      function draftPlayer(playerId, playerName, playerPosition) {
+        console.log('Drafting player:', playerName)
+        universalSpot = null
+        // Map player positions to roster spots
+        const positionMapping = {
+          QB: ['QB', 'RQB'],
+          HB: ['RB1', 'RB2', 'RRB'], // Handle HB as RB and map to available spots
+          WR: ['WR1', 'WR2', 'RWR'], // Map WR to available spots
+          TE: ['TE', 'RTE']
+        }
+        // Find the first available spot for the player
+        const availableSpots = positionMapping[playerPosition]
+        let assigned = false
+      
+        if (Array.isArray(availableSpots)) {
+          // For positions with multiple possible spots
+          for (let spot of availableSpots) {
+            if (!document.getElementById(spot).querySelector('.player-name').textContent) {
+              document.getElementById(spot).querySelector('.player-name').textContent = playerName
+              assigned = true
+              universalSpot = spot
+              break // Stop once assigned
+            }
+          }
+        } else {
+          // For positions with a single possible spot
+          if (!document.getElementById(availableSpots).querySelector('.player-name').textContent) {
+            document.getElementById(availableSpots).querySelector('.player-name').textContent = playerName
+            assigned = true
+          }
+        }
+      
+        if (!assigned) {
+          // Handle case where no spots are available (e.g., all RB spots filled)
+          console.error('No available spots for', playerName, 'at position', playerPosition)
+          // Optionally, show an error message to the user
+        }
+      
+        // Once a spot is found and assigned, make an AJAX call to draft the player in backend
+        if (assigned) {
+          console.log('Check 3')
+          const positionDiv = document.getElementById(universalSpot) // 'universalSpot' is the position name/ID
+          if (positionDiv) {
+            console.log('Check 4')
+            positionDiv.querySelector('.player-name').textContent = playerName
+          }
+          fetch('/draft_player', {
+            method: 'POST',
+            body: JSON.stringify({ playerId, universalSpot })
+          })
+          // Set a timeout so the "draft_player" function can run and reset the datatable
+          setTimeout(function () {
+            window.location.reload(true)
+          }, 500)
+        }
+      }
+      
+      function searchPlayers() {
+        var input, filter, table, tr, td, i, txtValue
+        input = document.getElementById('searchInput')
+        filter = input.value.toUpperCase()
+        table = document.getElementById('draft-table') // Make sure you have an ID for your table
+        tr = table.getElementsByTagName('tr')
+      
+        for (i = 0; i < tr.length; i++) {
+          td = tr[i].getElementsByTagName('td')[1] // Choose the column you want to search (e.g., Name)
+          if (td) {
+            txtValue = td.textContent || td.innerText
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+              tr[i].style.display = ''
+            } else {
+              tr[i].style.display = 'none'
+            }
+          }
+        }
+      }
+      function filterTableByPosition() {
+        console.log("OnChange")
+        const filterValue = document.getElementById("positionFilter").value.toUpperCase();
+        const table = document.getElementById("draft-table"); // Replace with your actual table ID
+        const rows = table.getElementsByTagName("tr");
+        
+        for (let i = 1; i < rows.length; i++) { // Start at 1 to skip header row
+          const positionCell = rows[i].getElementsByTagName("td")[3]; // Replace with the correct column index for position
+          if (positionCell) {
+            const positionText = positionCell.textContent || positionCell.innerText;
+            if (positionText.toUpperCase().indexOf(filterValue) > -1 || !filterValue) {
+              rows[i].style.display = "";
+            } else {
+              rows[i].style.display = "none";
+            }
+          }
+        }
+      }
+      
+      
+    </script>
+  </body>
+</html>

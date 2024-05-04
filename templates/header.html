@@ -1,0 +1,18 @@
+<!-- templates/header.html -->
+{% load static %}
+<link rel="stylesheet" href="{% static 'pages/header.css' %}">
+
+
+<header class="site-header">
+    <nav class="nav-bar">
+        <div class="nav-left">
+            <a href="{% url 'Home' %}">Home</a>
+            <a href="{% url 'team_create' %}">Teams</a>
+        </div>
+        <div class="nav-right">
+            <a href="{% url 'Drafting' %}">Draft</a>
+            <a href="{% url 'Drafting' %}">Rosters</a>
+            <a href="{% url 'Home' %}">Matchups</a>
+        </div>
+    </nav>
+</header>

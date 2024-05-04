@@ -1,0 +1,211 @@
+body {
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    display: flex;
+}
+
+.left-column {
+    width: 30%;
+    background-color: #7a7a7a;
+    margin: 10px;
+    border-radius: 10px;
+    padding: 20px; /* Added padding for internal spacing */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Add shadow for depth */
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center; /* Center items for a neater look */
+    overflow: hidden; /* Ensures content fits within the rounded corners */
+}
+
+.right-column {
+    width: 30%;
+    background-color: #7a7a7a;
+    margin: 10px;
+    border-radius: 10px;
+    padding: 20px; /* Added padding for internal spacing */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Add shadow for depth */
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center; /* Center items for a neater look */
+    overflow: hidden; /* Ensures content fits within the rounded corners */
+}
+
+.middle-column {
+    width: 40%;
+    background-color: #ddd;
+    margin: 10px;
+    border-radius: 10px;
+    /* Round the corners of the box */
+}
+
+.draft-main {
+    padding: 10px;
+}
+
+.draft-main ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.main-player-info {
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+table {
+    width: 100%;
+    /* Adjust as necessary */
+    border-collapse: collapse;
+    /* Collapse borders for a cleaner look */
+}
+
+th,
+td {
+    text-align: center;
+    /* Align text to the left */
+    padding: 4px;
+    /* Add some padding for content inside cells */
+}
+
+th {
+    cursor: pointer;
+    /* Cursor change for sortable headers */
+}
+
+.player-info {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    /* Allows player-info to fill available space */
+}
+
+.player-portrait {
+    width: 50px;
+    /* Adjust as needed */
+    height: auto;
+    margin-right: 10px;
+}
+
+.player-portrait {
+    width: 75px;
+    /* Adjust as needed */
+    height: auto;
+    margin-right: 10px;
+}
+
+.player-details {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    flex-grow: 1;
+    /* Allows player-details to fill available space */
+    gap: 10px;
+    /* Adjust the space between name, team-position, and points */
+}
+
+.player-details h4,
+.player-details p {
+    margin: 0;
+    /* Remove default margins */
+}
+
+.draft-btn {
+    padding: 5px 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    align-items: right;
+    margin: 5px;
+    /* Adds some space before the draft button */
+}
+
+.draft-btn:hover {
+    background-color: #45a049;
+}
+
+.select-btn {
+    padding: 5px 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    align-items: right;
+    /* Adds some space before the draft button */
+}
+
+.select-btn:hover {
+    background-color: #45a049;
+}
+
+#Team-Roster-Title {
+    text-align: center;
+}
+
+
+.team-roster h2 {
+    color: #ffffff;
+    text-align: center;
+    margin-bottom: 20px; /* More space below the team name */
+}
+
+.team-roster {
+    width:90%;
+}
+
+.position {
+    background-color: #ffffff; /* Light background for contrast */
+    color: #000000; /* Dark text for readability */
+    margin-bottom: 10px; /* Space between positions */
+    padding: 10px;
+    width: 100%; /* Use full width of the container */
+    box-sizing: border-box; /* Include padding and border in the width */
+    border-radius: 5px; /* Slightly rounded corners for each position */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Subtle shadow for depth */
+    transition: background-color 0.3s, transform 0.3s; /* Smooth transition for hover effects */
+}
+
+.position:hover {
+    background-color: #eaeaea; /* Lighter background on hover */
+    transform: translateY(-2px); /* Slight raise effect on hover */
+    cursor: pointer; /* Change cursor to indicate interactiveness */
+}
+
+.player-name {
+    font-weight: bold; /* Make player names stand out */
+}
+
+.drafted-list {
+    background-color: #ffffff; /* Light background for contrast */
+    color: #000000; /* Dark text for readability */
+    margin-bottom: 10px; /* Space between positions */
+    padding: 10px;
+    width: 100%; /* Use full width of the container */
+    box-sizing: border-box; /* Include padding and border in the width */
+    border-radius: 5px; /* Slightly rounded corners for each position */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Subtle shadow for depth */
+    transition: background-color 0.3s, transform 0.3s; /* Smooth transition for hover effects */
+}
+
+.drafted-list:hover {
+    background-color: #eaeaea; /* Lighter background on hover */
+    transform: translateY(-2px); /* Slight raise effect on hover */
+    cursor: pointer; /* Change cursor to indicate interactiveness */
+}
+
+.search-container {
+    margin: 5px;
+    padding: 10px; 
+    text-align: center;
+}

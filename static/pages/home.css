@@ -1,0 +1,36 @@
+body {
+    font-family: 'Courier New', Courier, monospace;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.content {
+    padding: 20px;
+    text-align: center;
+}
+
+.middle-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin: auto;
+    max-width: 1200px;
+    padding: 20px;
+}
+
+.side-image {
+    flex-basis: 50%;
+}
+
+.side-text {
+    flex-basis: 40%;
+    padding: 0 20px;
+}
+
+.image-1 {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 5px;
+}
