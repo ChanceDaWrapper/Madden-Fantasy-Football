@@ -11,4 +11,5 @@ urlpatterns = [
     path('delete_team/<int:team_id>/', views.deleteTeam, name='delete_team'),
     path('draft_player', views.draft_player, name='draft_player'),
     path('reset_players', views.reset_players, name='reset_players'),
+    path('rosters', views.rosters, name='Rosters'),
 ]

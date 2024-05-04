@@ -40,6 +40,7 @@ def playerData(request):
     else: 
         positions = positions_global
     
+    print("\n\nGetting to last bit\n\n")
     return render(request, 'drafting.html', {'players' : players, 'positions' : positions, 'fantasy_team' : team_name, 'draft_list' : draft_list })
 
 
@@ -90,6 +91,10 @@ def draft_player(request):
         player.drafted = True # Set the player's drafted status to true
         player.save() # Saving the player instance
         
+        # Print statements to make sure they are attached correctly
+        print("\n\n")
+        print(player, " has been drafted to ", team.name,"'s team")
+        print("\n\n")
         
         str1 = f"{team.name} -- {player.position} {player}"
         draft_list.append(str1)
@@ -105,8 +110,11 @@ def draft_player(request):
             round_1_plus = True
         
         current_team_id = team_ids_ordered[current_team_index]
+        print("\n\n Starting the positions adjustment")
         initial_positions = ['QB', 'RB1', 'RB2', 'WR1', 'WR2', 'TE', 'RQB', 'RRB', 'RWR', 'RTE']
         positions_with_none = [{'position': pos, 'player': None} for pos in initial_positions]
+        # Assuming you have a queryset of filled positions from your database
+        # For example, filled_positions = Position.objects.filter(team_id=current_team_id).select_related('player')
         filled_positions = Position.objects.filter(team_id=current_team_id).select_related('player')
 
         # Convert filled_positions to a dictionary for efficient lookups
@@ -151,3 +159,17 @@ def reset_players(request):
         return redirect("team_create")
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    
+@csrf_exempt
+def rosters(request):
+    # Requesting all teams from the Team model
+    teams = Team.objects.all()
+
+    # Create a dictionary to store the teams and rosters
+    team_rosters = {}
+    for team in teams:
+        # Get the positions for each team
+        positions = Position.objects.filter(team=team)
+        team_rosters[team] = positions
+
+    return render(request, 'rosters.html', {'team_rosters': team_rosters})

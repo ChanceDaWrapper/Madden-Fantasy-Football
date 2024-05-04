@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Team Rosters</title>
+        {% load static %}
+        <link rel="stylesheet" href="{% static 'pages/rosters.css' %}">
+    </head>
+    <body>
+        {% include 'header.html' %}
+
+
+        <h1>Team Rosters</h1>
+        {% for team, positions in team_rosters.items %}
+            <div class="team">
+                <h2>{{team.name}}</h2>
+                <ul>
+                    {% for position in positions %}
+                        <li>{{ position.position }}: <span class="player-name">{{ position.player|default:'' }}</span></li>
+                    {% empty %}
+                        <li>No Players Assigned</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% empty %}
+            <h2>No Teams Found.</h2>
+        {% endfor %}
+
+    </body>
+</html>
