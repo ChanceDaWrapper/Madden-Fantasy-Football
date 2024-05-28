@@ -10,29 +10,6 @@ h1 {
     color: #333;
 }
 
-form {
-    margin: 20px 0;
-}
-
-input[type="text"] {
-    padding: 10px;
-    margin-right: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
-
-button {
-    padding: 10px 15px;
-    background-color: #5cb85c;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-button:hover {
-    background-color: #4cae4c;
-}
 
 ul {
     list-style: none;
@@ -46,13 +23,18 @@ li {
     width: 60%;
     border: 1px solid #ddd;
     border-radius: 4px;
+    text-align: left;
 }
 
-li button {
-    background-color: #d9534f;
-    margin-left: 20px;
+.team {
+    flex: 1 1 48%; /* Maximizing the width so each team takes up less than half */
+    margin: 10px 1%; /* Providing some margin to ensure space between teams */
+    box-sizing: border-box; /* Includes padding and border in the width calculations */
+
 }
 
-li button:hover {
-    background-color: #c9302c;
+.container {
+    display: flex;
+    flex-wrap: wrap;      /* This allows items to wrap onto the next line */
+    justify-content: center; /* Spreads the items horizontally */
 }

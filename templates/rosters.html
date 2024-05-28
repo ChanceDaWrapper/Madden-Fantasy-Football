@@ -11,20 +11,21 @@
 
 
         <h1>Team Rosters</h1>
-        {% for team, positions in team_rosters.items %}
-            <div class="team">
-                <h2>{{team.name}}</h2>
-                <ul>
-                    {% for position in positions %}
-                        <li>{{ position.position }}: <span class="player-name">{{ position.player|default:'' }}</span></li>
-                    {% empty %}
-                        <li>No Players Assigned</li>
-                    {% endfor %}
-                </ul>
-            </div>
-        {% empty %}
-            <h2>No Teams Found.</h2>
-        {% endfor %}
-
+        <div class="container">
+            {% for team, positions in team_rosters.items %}
+                <div class="team">
+                    <h2>{{team.name}}</h2>
+                    <ul>
+                        {% for position in positions %}
+                            <li> <strong>{{ position.position }}: </strong> <span class="player-name">{{ position.player|default:'' }}</span></li>
+                        {% empty %}
+                            <li>No Players Assigned</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% empty %}
+                <h2>No Teams Found.</h2>
+            {% endfor %}
+        </div>
     </body>
 </html>

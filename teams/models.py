@@ -69,4 +69,9 @@ class Team(models.Model):
     def get_roster(self):
         # Logic to get the team's roster in the desired order
         return self.positions.all().order_by('position')
+
+class Schedule(models.Model):
+    week = models.PositiveIntegerField() # Integer field to store the week of the matchup
+    hometeam = models.ForeignKey('Team', on_delete=models.CASCADE, related_name='schedules') # Field to attach team to the schedule model
+    awayteam = models.ForeignKey('Team', on_delete=models.CASCADE, related_name='schedules') # Field to attach team to the schedule model
     

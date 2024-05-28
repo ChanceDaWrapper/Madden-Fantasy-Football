@@ -8,17 +8,16 @@ from django.views.decorators.http import require_http_methods
 from django.views.generic import TemplateView
 from teams.models import Team, Player, WeeklyStat, Position
 
-# Assuming team_ids_ordered is a list of team IDs in draft order
-team_ids_ordered = list(Team.objects.order_by('id').values_list('id', flat=True))
-# Current team's index in team_ids_ordered
-current_team_index = 0
-# Draft direction: 1 for forward, -1 for backward
-draft_direction = 1
+team_ids_ordered = list(Team.objects.order_by('id').values_list('id', flat=True)) # Assuming team_ids_ordered is a list of team IDs in draft order
+current_team_index = 0 # Current team's index in team_ids_ordered
+draft_direction = 1 # Draft direction: 1 for forward, -1 for backward
 
-round_1_plus = False
-positions_global = None
+round_1_plus = False # Initial round variable
+positions_global = None # Global positions variable for display in drafting.html
 
-draft_list = []
+draft_list = [] # Total drafted list
+round_counter = 1
+pick_counter = 1
 
 class HomePageView(TemplateView):
     template_name = 'home.html'
@@ -72,7 +71,7 @@ def deleteTeam(request, team_id):
 @csrf_exempt  # Use this decorator to exempt this view from CSRF verification.
 @require_http_methods(["POST"])  # Ensure that this view only accepts POST requests.
 def draft_player(request):
-    global current_team_index, draft_direction, team_ids_ordered, round_1_plus, positions_global, draft_list
+    global current_team_index, draft_direction, team_ids_ordered, round_1_plus, positions_global, draft_list, pick_counter, round_counter
     print(team_ids_ordered)
             
     
@@ -90,31 +89,26 @@ def draft_player(request):
         team.draft_player(player, position) # Method to draft the player to the team
         player.drafted = True # Set the player's drafted status to true
         player.save() # Saving the player instance
-        
-        # Print statements to make sure they are attached correctly
-        print("\n\n")
-        print(player, " has been drafted to ", team.name,"'s team")
-        print("\n\n")
-        
-        str1 = f"{team.name} -- {player.position} {player}"
+
+        str1 = f"{round_counter}.{pick_counter}: {team.name} -- {player.position} {player}"
         draft_list.append(str1)
-        
+        pick_counter += 1
         current_team_index += draft_direction
+        
         
         # Check if we have reached the end or the beginning of the list to reverse the direction
         if current_team_index >= len(team_ids_ordered) or current_team_index < 0:
             draft_direction *= -1  # Reverse the direction
             # Ensure current_team_index stays within bounds
             current_team_index = max(0, min(current_team_index, len(team_ids_ordered) - 1))
-            print("\n\nSwitching Direction\n\n")
             round_1_plus = True
+            pick_counter = 1
+            round_counter += 1
         
         current_team_id = team_ids_ordered[current_team_index]
-        print("\n\n Starting the positions adjustment")
         initial_positions = ['QB', 'RB1', 'RB2', 'WR1', 'WR2', 'TE', 'RQB', 'RRB', 'RWR', 'RTE']
         positions_with_none = [{'position': pos, 'player': None} for pos in initial_positions]
         # Assuming you have a queryset of filled positions from your database
-        # For example, filled_positions = Position.objects.filter(team_id=current_team_id).select_related('player')
         filled_positions = Position.objects.filter(team_id=current_team_id).select_related('player')
 
         # Convert filled_positions to a dictionary for efficient lookups
@@ -126,7 +120,6 @@ def draft_player(request):
                 playerSwap = filled_positions_dict[position['position']]
                 position['player'] = playerSwap.name if playerSwap else None
         
-        print("\n\n")
         
         positions_global = positions_with_none
         
@@ -144,10 +137,12 @@ def draft_player(request):
     
 @csrf_exempt
 def reset_players(request):
-    global team_ids_ordered, positions_global, round_1_plus, draft_list
+    global team_ids_ordered, positions_global, round_1_plus, draft_list, pick_counter, round_counter
     positions_global = None
     round_1_plus = False
     draft_list = []
+    pick_counter = 1
+    round_counter = 1
     team_ids_ordered = list(Team.objects.order_by('id').values_list('id', flat=True))
 
     random.shuffle(team_ids_ordered)
@@ -169,7 +164,27 @@ def rosters(request):
     team_rosters = {}
     for team in teams:
         # Get the positions for each team
+        # current_team_id = Team.object.filter(name = team)
         positions = Position.objects.filter(team=team)
-        team_rosters[team] = positions
+        # Iterate through each position to access its fields
+        for position in positions:
+            print(position.player.name)  # Now correctly accessing the position field of each Position object
+        
+        initial_positions = ['QB', 'RB1', 'RB2', 'WR1', 'WR2', 'TE', 'RQB', 'RRB', 'RWR', 'RTE']
+        positions_with_none = [{'position': pos, 'player': None} for pos in initial_positions]
+        # Assuming you have a queryset of filled positions from your database
+        filled_positions = Position.objects.filter(team=team).select_related('player')
+
+        # Convert filled_positions to a dictionary for efficient lookups
+        filled_positions_dict = {pos.position: pos.player for pos in filled_positions}
+
+        # Update positions_with_none with players from filled_positions where applicable
+        for position in positions_with_none:
+            if position['position'] in filled_positions_dict:
+                playerSwap = filled_positions_dict[position['position']]
+                position['player'] = playerSwap.name if playerSwap else None
+        
+        
+        team_rosters[team] = positions_with_none
 
     return render(request, 'rosters.html', {'team_rosters': team_rosters})
