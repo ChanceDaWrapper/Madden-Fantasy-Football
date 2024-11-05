@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Matchups</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'pages/matchups.css' %}">
+    <style>
+        .winner { color: rgb(9, 205, 9); }
+        .loser { color: rgb(255, 0, 0); }
+        .tie { color: orange; }
+    </style>
+</head>
+<body>
+    {% include 'header.html' %}
+    <div class="container">
+        <!-- Dropdown to select week -->
+        <div class="week-selector">
+            <label for="week-dropdown">Select Week:</label>
+            <select id="week-dropdown" onchange="showSelectedWeek()">
+                {% for week in weeks %}
+                    <option value="week-{{ week }}">Week {{ week }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    
+        <!-- Top Scorers Section -->
+        <div class="top-scorers">
+            <h1>Top Scorers</h1>
+            {% for week, positions in top_scorers.items %}
+                <div class="week-content" id="week-{{ week }}-top-scorers" style="display: none;">
+                    <ul>
+                        <h2>Week {{ week }}</h2>
+                        <div class="positions-list">
+                            {% for position, players in positions.items %}
+                                <div class="position">
+                                    <li><strong>{{ position }}</strong>:
+                                            <ul>
+                                                {% for player_stat in players %}
+                                                    <div class="player-section">
+                                                        <li><strong><span class="player-info">{{ player_stat.player.name }}</span> - <span class="points">{{ player_stat.fantasy_points }} points</span></strong></li>
+                                                    </div>
+                                                {% endfor %}
+                                            </ul>
+                                    </li>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </ul>
+                </div>
+            {% endfor %}
+        </div>
+    
+        <!-- Matchups Section -->
+        <h1>All Matchups</h1>
+        {% for week, week_matchups in matchups.items %}
+            <div class="week-content" id="week-{{ week }}-matchups" style="display: none;">
+                <h2>Week {{ week }}</h2>
+                <div class="matchups-grid">
+                    {% for matchup in week_matchups %}
+                        <div class="matchup">
+                            <div class="team">
+                                <div class="team {{ matchup.hometeam.result_class }}">
+                                    <h3><span class="matchup-name"> {{ matchup.hometeam.name }} </span> 
+                                        <span class="matchup-points"> ({{ matchup.hometeam.points }} points) </span></h3>
+                                </div>
+                                <div class="names">
+                                    <ul>
+                                        {% for position in matchup.hometeam.roster %}
+                                            <div class="player-section">
+                                                <li>
+                                                    <span class="player-info"><strong>{{ position.position }}: {{ position.player.name }} </strong></span>
+                                                    <span class="points">
+                                                        {% for stat in position.player.all_weekly_stats %}
+                                                            {% if stat.week == week %}
+                                                                <strong> {{ stat.fantasy_points }}</strong>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </span>
+                                                </li>
+                                            </div>
+                                        {% empty %}
+                                            <li>No players assigned.</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="team">
+                                <div class="team {{ matchup.awayteam.result_class }}">
+                                    <h3><span class="matchup-name"> {{ matchup.awayteam.name }} </span> 
+                                        <span class="matchup-points"> ({{ matchup.awayteam.points }} points) </span></h3>
+                                </div>
+                                <div class="names">
+                                    <ul>
+                                        {% for position in matchup.awayteam.roster %}
+                                            <div class="player-section">
+                                                <li>
+                                                    <span class="player-info"><strong>{{ position.position }}: {{ position.player.name }} </strong></span>
+                                                    <span class="points">
+                                                        {% for stat in position.player.all_weekly_stats %}
+                                                            {% if stat.week == week %}
+                                                                <strong>{{ stat.fantasy_points }}</strong>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </span>
+                                                </li>
+                                            </div>
+                                        {% empty %}
+                                            <li>No players assigned.</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- JavaScript for Week Selection -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Initialize view by showing the first week by default
+            document.getElementById('week-dropdown').selectedIndex = 0;
+            showSelectedWeek();
+
+            // Function to display selected week content
+            function showSelectedWeek() {
+                // Hide all week content initially
+                document.querySelectorAll('.week-content').forEach(div => {
+                    div.style.display = 'none';
+                });
+
+                // Get the selected week's value from the dropdown
+                const selectedWeek = document.getElementById('week-dropdown').value;
+
+                // Show the selected week's top scorers and matchups content
+                const topScorersDiv = document.getElementById(selectedWeek + '-top-scorers');
+                const matchupsDiv = document.getElementById(selectedWeek + '-matchups');
+
+                if (topScorersDiv) {
+                    topScorersDiv.style.display = 'block';
+                } else {
+                    console.warn(`Top scorers div not found for ${selectedWeek}`);
+                }
+
+                if (matchupsDiv) {
+                    matchupsDiv.style.display = 'block';
+                } else {
+                    console.warn(`Matchups div not found for ${selectedWeek}`);
+                }
+            }
+
+            // Attach the function to the dropdown
+            document.getElementById('week-dropdown').addEventListener('change', showSelectedWeek);
+        });
+    </script>
+</body>
+</html>

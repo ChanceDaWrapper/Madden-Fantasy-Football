@@ -52,14 +52,14 @@
               {% if not player.drafted %}
                 <tr>
                   <td>
-                    <img class="player-portrait" src="https://madden-assets-cdn.pulse.ea.com/madden24/portraits/256/{{ player.portraitId }}.png" alt="{{ player.name }}" />
+                    <img class="player-portrait" src="https://ratings-images-prod.pulse.ea.com/madden25/portraits/256/{{ player.portraitId }}.png" alt="{{ player.name }}" />
                   </td>
                   <td>{{ player.name }}</td>
                   <td>{{ player.team }}</td>
                   <td>{{ player.position }}</td>
                   <td>{{ player.lastSeasonPts }}</td>
                   <td>
-                    <button type="button" class="select-btn" onclick="selectPlayer('{{ player.name }}', '{{ player.rosterId }}', '{{ player.team }}', '{{ player.position }}', '{{ player.lastSeasonPts }}', '{{ player.portraitId }}', '{{ player.id }}')">Select</button>
+                    <button type="button" class="select-btn" onclick='selectPlayer("{{ player.name }}", "{{ player.rosterId }}", "{{ player.team }}", "{{ player.position }}", "{{ player.lastSeasonPts }}", "{{ player.portraitId }}", "{{ player.id }}")'>Select</button>
                   </td>
                 </tr>
               {% endif %}
@@ -77,7 +77,7 @@
           {% for position in positions %}
             <!-- Assuming 'positions' is the context variable passed from the view -->
             <div id="{{ position.position }}" class="position">
-              {{ position.position }}: <span class="player-name">{{ position.player|default:'' }}</span>
+              {{ position.position }}: <span class="player-name">{{ position.player|default:"" }}</span>
             </div>
           {% endfor %}
         </div>
@@ -88,26 +88,26 @@
         // Add playerId as a parameter
       
         // Update the main player info
-        document.getElementById('player-name').innerText = name
-        document.getElementById('player-details').innerText = team + ' - ' + position + ' | Last Season Points: ' + points
+        document.getElementById("player-name").innerText = name
+        document.getElementById("player-details").innerText = team + " - " + position + " | Last Season Points: " + points
       
-        var portraitUrl = 'https://madden-assets-cdn.pulse.ea.com/madden24/portraits/256/' + portraitId + '.png'
-        document.getElementById('player-portrait').src = portraitUrl
+        var portraitUrl = "https://ratings-images-prod.pulse.ea.com/madden25/portraits/256/" + portraitId + ".png"
+        document.getElementById("player-portrait").src = portraitUrl
       
         // Assuming getTeamColor is correctly defined and available
         const teamColor = getTeamColor(team)
-        const mainPlayerInfo = document.querySelector('.main-player-info')
+        const mainPlayerInfo = document.querySelector(".main-player-info")
         mainPlayerInfo.style.backgroundColor = teamColor
       
         // Calculate and set font color based on background color brightness
         const fontColor = getFontColorByBackground(teamColor)
         mainPlayerInfo.style.color = fontColor
       
-        // Set the draft button's data attributes
-        var draftBtn = document.querySelector('.draft-btn')
-        draftBtn.setAttribute('data-player-id', playerId) // Ensure this uses the correct variable
-        draftBtn.setAttribute('data-player-name', name)
-        draftBtn.setAttribute('data-player-position', position)
+        // Set the draft button"s data attributes
+        var draftBtn = document.querySelector(".draft-btn")
+        draftBtn.setAttribute("data-player-id", playerId) // Ensure this uses the correct variable
+        draftBtn.setAttribute("data-player-name", name)
+        draftBtn.setAttribute("data-player-position", position)
       
         console.log(rosterId)
       }

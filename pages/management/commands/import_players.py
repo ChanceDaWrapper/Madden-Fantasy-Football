@@ -10,7 +10,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         
         # Load the player data from a CSV file
-        df_players = pd.read_csv('content\CACT7_players.csv')
+        df_players = pd.read_csv('content\MC_players.csv')
         valid_positions = ['QB', 'HB', 'WR', 'TE']
         df_players = df_players[df_players['position'].isin(valid_positions)]
 

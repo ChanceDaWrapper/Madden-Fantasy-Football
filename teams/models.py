@@ -1,5 +1,8 @@
 from django.db import models
 from django.utils import timezone
+from django.db.models import Prefetch
+from django.core.validators import MinValueValidator
+
 # Create your models here.
 class Player(models.Model):
     name = models.CharField(max_length=200)
@@ -20,9 +23,9 @@ class Player(models.Model):
 class WeeklyStat(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name='weekly_stats')
     week = models.PositiveIntegerField()
-    passing_yards = models.PositiveIntegerField(default=0)
-    rushing_yards = models.PositiveIntegerField(default=0)
-    receiving_yards = models.PositiveIntegerField(default=0)
+    passing_yards = models.FloatField(default=0.0)
+    rushing_yards = models.FloatField(default=0.0)
+    receiving_yards = models.FloatField(default=0.0)
     passing_tds = models.PositiveIntegerField(default=0)
     rushing_tds = models.PositiveIntegerField(default=0)
     receiving_tds = models.PositiveIntegerField(default=0)
@@ -66,12 +69,32 @@ class Team(models.Model):
         # Logic to remove player from the team
         Position.objects.filter(player=player, team=self).delete()
 
-    def get_roster(self):
-        # Logic to get the team's roster in the desired order
+    def get_roster(self, week=None):
+
         return self.positions.all().order_by('position')
+
+    def get_roster_with_stats(self, week=None):
+        """Fetch the team's roster with all weekly stats prefetched."""
+        positions = self.positions.select_related('player').prefetch_related(
+            Prefetch(
+                'player__weekly_stats',
+                queryset=WeeklyStat.objects.all(),
+                to_attr='all_weekly_stats'
+            )
+        ).order_by('position')
+
+        # for position in positions:
+        #     print(f"Player: {position.player.rosterId}, Stats: {position.player.all_weekly_stats}")
+        #     if week:
+        #         weekly_stats_for_week = next((stat for stat in position.player.all_weekly_stats if stat.week == week), None)
+        #         if weekly_stats_for_week:
+        #             print(f"Fantasy Points for Week {week}: {weekly_stats_for_week.fantasy_points}")
+
+        return positions
+
 
 class Schedule(models.Model):
     week = models.PositiveIntegerField() # Integer field to store the week of the matchup
-    hometeam = models.ForeignKey('Team', on_delete=models.CASCADE, related_name='schedules') # Field to attach team to the schedule model
-    awayteam = models.ForeignKey('Team', on_delete=models.CASCADE, related_name='schedules') # Field to attach team to the schedule model
+    hometeam = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='hometeam') # Field to attach team to the schedule model
+    awayteam = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='awayteam') # Field to attach team to the schedule model
     

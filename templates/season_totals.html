@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Matchups</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'pages/season_totals.css' %}">
+
+</head>
+
+<body>
+    {% include 'header.html' %}
+    <div class="container">
+        <!-- Top Scorers Section -->
+        <div class="top-scorers">
+            <h1>Top Scorers</h1>
+            <ul>
+                <div class="positions-list">
+                    {% for position, players in season_totals.items %}
+                    <div class="position">
+                        <li><strong>{{ position }}</strong>:
+                            <ul>
+                                {% for player_stat in players %}
+                                <div class="player-section">
+                                    <li><strong><span class="player-info">{{ player_stat.player.name }}</span> - <span
+                                                class="points">{{ player_stat.total_points }} points</span></strong>
+                                    </li>
+                                </div>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                    </div>
+                    {% endfor %}
+                </div>
+            </ul>
+        </div>
+    </div>
+</body>
+
+</html>

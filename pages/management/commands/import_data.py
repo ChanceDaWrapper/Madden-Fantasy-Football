@@ -11,9 +11,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
 
-        df_rec = pd.read_csv('content\CACT7_receiving.csv')
-        df_pass = pd.read_csv('content\CACT7_passing.csv')
-        df_rush = pd.read_csv('content\CACT7_rushing.csv')
+        df_rec = pd.read_csv('content\MC_receiving.csv')
+        df_pass = pd.read_csv('content\MC_passing.csv')
+        df_rush = pd.read_csv('content\MC_rushing.csv')
 
         # Setting the dataframes to just the player name and their fantasy points
         df_rec = df_rec[['player__position', 'team__abbrName', 'player__rosterId', 'player__fullName', 'recTotalCatches', 'recTotalYds', 'recTotalTDs']]

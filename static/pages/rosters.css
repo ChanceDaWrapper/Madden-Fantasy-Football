@@ -2,18 +2,36 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f4f4f4;
+    background-color: #191919;
+    color: #fff;
     text-align: center;
 }
 
+body::before {
+    /* Create an overlay with the fading effect */
+    content: "";
+    position: fixed; /* Make the overlay fixed to the viewport */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/static/files/christianmccaffrey1.jpg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    opacity: 0.3; /* Adjust the opacity value for the desired fading effect */
+    z-index: -1;
+}
+
 h1 {
-    color: #333;
+    color: #fff;
 }
 
 
 ul {
     list-style: none;
     padding: 0;
+    color: #000
 }
 
 li {
@@ -24,6 +42,8 @@ li {
     border: 1px solid #ddd;
     border-radius: 4px;
     text-align: left;
+    color: #000
+
 }
 
 .team {

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Matchups</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'pages/upload.css' %}">
+</head>
+<body>
+    {% include 'header.html' %}
+    <div>
+        <form method="post" action="{% url 'upload_stats' %}" enctype="multipart/form-data">
+            <div>
+                <label for="week">Week Number:</label>
+                <input type="number" name="week" id="week" min="1" required>
+            </div>
+            <div>
+                <label for="passing_file">Passing Stats CSV:</label>
+                <input type="file" name="passing_file" id="passing_file" accept=".csv" required>
+            </div>
+            <div>
+                <label for="rushing_file">Rushing Stats CSV:</label>
+                <input type="file" name="rushing_file" id="rushing_file" accept=".csv" required>
+            </div>
+            <div>
+                <label for="receiving_file">Receiving Stats CSV:</label>
+                <input type="file" name="receiving_file" id="receiving_file" accept=".csv" required>
+            </div>
+            <!-- <div>
+                <label for="players_file">Players File CSV:</label>
+                <input type="file" name="players_file" id="players_file" accept=".csv" required>
+            </div> -->
+            <button type="submit">Upload</button>
+        </form>
+    </div>
+</body>
+</html>

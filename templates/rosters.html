@@ -8,8 +8,11 @@
     </head>
     <body>
         {% include 'header.html' %}
-
-
+        <div class="container">
+            <form action="/generate_schedule">
+                <button class="generate-schedule">Generate New Schedule</button>
+            </form>
+        </div>
         <h1>Team Rosters</h1>
         <div class="container">
             {% for team, positions in team_rosters.items %}
@@ -27,5 +30,7 @@
                 <h2>No Teams Found.</h2>
             {% endfor %}
         </div>
+
+
     </body>
 </html>

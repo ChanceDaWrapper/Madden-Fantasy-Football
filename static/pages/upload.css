@@ -22,53 +22,53 @@ body::before {
     z-index: -1;
 }
 
-h1 {
-    color: #333;
-}
 
 form {
-    margin: 20px 0;
+    background-color: white;
+    max-width: 400px;
+    margin: 40px auto;
+    padding: 20px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
 }
 
-input[type="text"] {
+form div {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+    color: #555;
+}
+
+input[type='number'],
+input[type='file'] {
+    width: calc(100% - 20px);
     padding: 10px;
-    margin-right: 10px;
-    border: 1px solid #ddd;
+    margin-top: 5px;
+    border: 1px solid #ccc;
     border-radius: 4px;
 }
 
 button {
-    padding: 10px 15px;
-    background-color: #5cb85c;
+    background-color: #0056b3;
     color: white;
+    padding: 10px 20px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    transition: background-color 0.3s;
 }
 
 button:hover {
-    background-color: #4cae4c;
+    background-color: #004494;
 }
 
-ul {
-    list-style: none;
-    padding: 0;
-}
-
-li {
-    background-color: #fff;
-    padding: 15px;
-    margin: 10px auto;
-    width: 20%;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
-
-li button {
-    background-color: #d9534f;
-    margin-left: 20px;
-}
-
-li button:hover {
-    background-color: #c9302c;
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    form {
+        width: 90%;
+        padding: 15px;
+    }
 }
