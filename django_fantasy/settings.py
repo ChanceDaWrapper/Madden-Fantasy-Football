@@ -27,7 +27,7 @@ SECRET_KEY = "31457b66f1cb161a7f01e486caa75fa1c75fc413ba9b66f8dd638a6f78c55ac651
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['https://fantasyfootballmadden.vercel.app/']
+ALLOWED_HOSTS = ['https://fantasyfootballmadden.vercel.app/', 'https://fantasyfootballmadden-rmzx.vercel.app/']
 
 
 # Application definition
