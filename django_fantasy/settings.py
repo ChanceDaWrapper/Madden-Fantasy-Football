@@ -16,17 +16,18 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+SECURE_SSL_REDIRECT = True
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-)#4+kw(bi!s*whk-4-!*bv)imt&wmy@%#q0!@6zui3o*%a2++r"
+SECRET_KEY = "31457b66f1cb161a7f01e486caa75fa1c75fc413ba9b66f8dd638a6f78c55ac651e2ef24647a784639551e283bad35da95e450af437c41a8643284a6062069d22b518681ba49136b722ab1312dc594c21c0eacfa2d84c23c2688741266e25cc6ed6c2cf3ea3eeee85cb9de3f89637958f5715f0bc6e19066febd620ba21eb8889fffca6f4830681a3421c95ecb3799dddcba91614e04f9f6869f379bc90cd5237091d1b3270999de41e856cdff404e9fc21bd0148553e2879a06a411def263a1d23dbcdfaa6b72dae0047aab77811953eacf7916c91e2dd71e77a6c76d189bde60a211b93f5e665be3b46e1a73260aa6b7678589f18361763503313a02b6ead8"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['https://fantasyfootballmadden.vercel.app/']
 
 
 # Application definition
@@ -128,3 +129,11 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Only utilize the site over HTTPS
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
