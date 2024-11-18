@@ -256,7 +256,7 @@ reserve_positions = {
 
 @csrf_exempt
 def matchups(request):
-    weeks = range(1, 15)  # Assuming NFL weeks 1 through 17
+    weeks = range(1, 17)  # Assuming NFL weeks 1 through 17
     matchups_data = {}
     primary_positions = ['QB', 'RB1', 'RB2', 'WR1', 'WR2', 'TE']
     reserve_positions = {
@@ -268,6 +268,8 @@ def matchups(request):
         'TE': ['RTE']
     }
     
+    Team.objects.update(wins=0, losses=0, totalPoints=0)
+
 
     for week in weeks:
         week_matchups = Schedule.objects.filter(week=week).select_related('hometeam', 'awayteam')
@@ -286,11 +288,15 @@ def matchups(request):
             matchup.hometeam.points = hometeam_points
             matchup.awayteam.points = awayteam_points
             
-            # Add winner/loser class based on points
+            # Determine the result and update wins/losses
             if hometeam_points > awayteam_points:
+                matchup.hometeam.wins += 1
+                matchup.awayteam.losses += 1
                 matchup.hometeam.result_class = 'winner'
                 matchup.awayteam.result_class = 'loser'
             elif hometeam_points < awayteam_points:
+                matchup.awayteam.wins += 1
+                matchup.hometeam.losses += 1
                 matchup.hometeam.result_class = 'loser'
                 matchup.awayteam.result_class = 'winner'
             else:
@@ -338,7 +344,7 @@ def generate_schedule(request):
         teams.append(None)  # Adding a dummy team for bye-weeks
 
     # Ensure we are planning for 14 weeks
-    total_weeks = 14
+    total_weeks = 15
 
     # Generate the schedule for 14 weeks
     for week in range(total_weeks):
