@@ -15,7 +15,7 @@ class Player(models.Model):
     position = models.CharField(max_length=10)  # Position usually is a short string like 'QB'
     lastSeasonPts = models.PositiveIntegerField()  # Points are typically positive
     drafted = models.BooleanField(default=False)  # Boolean should have a default value
-    
+        
     def __str__(self):
         return self.name  # A string representation of the model, typically using the player's name
 
@@ -60,6 +60,7 @@ class Team(models.Model):
     wins = models.PositiveIntegerField(default=0)
     losses = models.PositiveIntegerField(default=0)
     totalPoints = models.PositiveIntegerField(default=0)
+    draftPick = models.PositiveIntegerField(default=0)
 
     def draft_player(self, player, position):
         # Logic to add player to the team in the given position

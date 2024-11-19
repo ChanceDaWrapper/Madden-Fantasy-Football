@@ -1,0 +1,69 @@
+body {
+    font-family: 'Courier New', Courier, monospace;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background-color: #191919;
+    color: white;
+
+}
+
+body::before {
+    /* Create an overlay with the fading effect */
+    content: "";
+    position: fixed; /* Make the overlay fixed to the viewport */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/static/files/christianmccaffrey1.jpg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    opacity: 0.3; /* Adjust the opacity value for the desired fading effect */
+    z-index: -1;
+  }
+
+.content {
+    width: 90%;
+    padding: 20px;
+    text-align: center;
+}
+
+.middle-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin: auto;
+    max-width: 1200px;
+    padding: 20px;
+}
+
+.side-image {
+    flex-basis: 50%;
+    margin: 0px 20px;
+
+}
+
+.side-text {
+    flex: 1;
+    height: 100%;
+    width: 30%;
+    display: flex; /* Add flex display */
+    flex-direction: column; /* Arrange items in a column */
+    justify-content: center; /* Center the items vertically */
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    color: white;
+    text-align: center;
+    background-color: #333; /* Dark gray background */
+    padding: 20px; /* Add some padding around the content */
+    border-radius: 10px; /* Round the corners */
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.6); /* White blurry border */
+    margin: 0px 20px;
+}
+
+.image-1 {
+    width: 100%;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.6); /* White blurry border */
+}

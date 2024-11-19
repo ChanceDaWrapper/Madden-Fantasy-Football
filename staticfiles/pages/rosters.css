@@ -1,0 +1,60 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #191919;
+    color: #fff;
+    text-align: center;
+}
+
+body::before {
+    /* Create an overlay with the fading effect */
+    content: "";
+    position: fixed; /* Make the overlay fixed to the viewport */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/static/files/christianmccaffrey1.jpg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    opacity: 0.3; /* Adjust the opacity value for the desired fading effect */
+    z-index: -1;
+}
+
+h1 {
+    color: #fff;
+}
+
+
+ul {
+    list-style: none;
+    padding: 0;
+    color: #000
+}
+
+li {
+    background-color: #fff;
+    padding: 15px;
+    margin: 10px auto;
+    width: 60%;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-align: left;
+    color: #000
+
+}
+
+.team {
+    flex: 1 1 48%; /* Maximizing the width so each team takes up less than half */
+    margin: 10px 1%; /* Providing some margin to ensure space between teams */
+    box-sizing: border-box; /* Includes padding and border in the width calculations */
+
+}
+
+.container {
+    display: flex;
+    flex-wrap: wrap;      /* This allows items to wrap onto the next line */
+    justify-content: center; /* Spreads the items horizontally */
+}

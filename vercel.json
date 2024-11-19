@@ -1,0 +1,10 @@
+{
+    "version": 2,
+    "builds": [
+      { "src": "django_fantasy/wsgi.py", "use": "@vercel/python", "config": {"maxLambdaSize": "15mb", "runtime" : "python3.12.7"} }
+    ],
+    "routes": [
+      { "src": "/(.*)", "dest": "django_fantasy/wsgi.py" }
+    ]
+  }
+  

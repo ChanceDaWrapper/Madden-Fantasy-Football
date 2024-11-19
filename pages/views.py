@@ -9,10 +9,9 @@ from django.views.generic import TemplateView
 from teams.models import Team, Player, WeeklyStat, Position, Schedule
 from django.db.models import Prefetch
 import pandas as pd
+from operator import attrgetter
 
-team_ids_ordered = list(Team.objects.order_by('id').values_list('id', flat=True)) # Assuming team_ids_ordered is a list of team IDs in draft order
-
-current_team_index = 0 # Current team's index in team_ids_ordered
+global current_team_index
 draft_direction = 1 # Draft direction: 1 for forward, -1 for backward
 
 round_1_plus = False # Initial round variable
@@ -27,7 +26,16 @@ class HomePageView(TemplateView):
     template_name = 'home.html'
     
 def playerData(request):
-    global current_team_index, draft_direction, team_ids_ordered, round_1_plus, draft_list
+    global current_team_index, draft_direction, round_1_plus, draft_list
+    
+    # Fetch teams ordered by their "DraftPick" field
+    teams = Team.objects.order_by('draftPick')
+    team_ids_ordered = [team.id for team in teams]
+
+    print(current_team_index)
+    for team in teams:
+        print(team.name)
+    
     current_team_id = team_ids_ordered[current_team_index]
     positions = Position.objects.filter(team_id=current_team_id)
 
@@ -44,7 +52,7 @@ def playerData(request):
         positions = positions_global
     
     print("\n\nGetting to last bit\n\n")
-    return render(request, 'drafting.html', {'players' : players, 'positions' : positions, 'fantasy_team' : team_name, 'draft_list' : draft_list })
+    return render(request, 'drafting.html', {'players': players, 'positions': positions, 'fantasy_team': team_name, 'draft_list': draft_list})
 
 
 
@@ -78,94 +86,108 @@ def deleteTeam(request, team_id):
     return redirect('team_create')
 
 
-@csrf_exempt  # Use this decorator to exempt this view from CSRF verification.
-@require_http_methods(["POST"])  # Ensure that this view only accepts POST requests.
+@csrf_exempt
+@require_http_methods(["POST"])
 def draft_player(request):
-    global current_team_index, draft_direction, team_ids_ordered, round_1_plus, positions_global, draft_list, pick_counter, round_counter
-    print(team_ids_ordered)
-            
-    
-    # Parse the JSON data from the request body
+    global current_team_index, draft_direction, round_1_plus, positions_global, draft_list, pick_counter, round_counter
+
     try:
+        # Parse JSON data
         data = json.loads(request.body)
         player_id = data['playerId']
-        position = data.get('universalSpot')  # Assuming you also send position in your request
+        position = data.get('universalSpot')
 
+        # Fetch teams and team IDs
+        teams = Team.objects.order_by('draftPick')
+        team_ids_ordered = [team.id for team in teams]
         current_team_id = team_ids_ordered[current_team_index]
-        team = Team.objects.get(id=current_team_id)
-    
+
         # Draft the player
         player = Player.objects.get(id=player_id)
-        team.draft_player(player, position) # Method to draft the player to the team
-        player.drafted = True # Set the player's drafted status to true
-        player.save() # Saving the player instance
+        team = Team.objects.get(id=current_team_id)
+        team.draft_player(player, position)
+        player.drafted = True
+        player.save()
 
+        # Append to draft list
         str1 = f"{round_counter}.{pick_counter}: {team.name} -- {player.position} {player}"
         draft_list.append(str1)
         pick_counter += 1
+
+        # Debugging: Check current index and direction
+        # print(f"Before Update: Current Team Index: {current_team_index}, Draft Direction: {draft_direction}")
+
+        # Update team index
         current_team_index += draft_direction
-        
-        
-        # Check if we have reached the end or the beginning of the list to reverse the direction
+
+        # Check if end of the draft order is reached
         if current_team_index >= len(team_ids_ordered) or current_team_index < 0:
-            draft_direction *= -1  # Reverse the direction
-            # Ensure current_team_index stays within bounds
+            draft_direction *= -1  # Reverse direction
             current_team_index = max(0, min(current_team_index, len(team_ids_ordered) - 1))
             round_1_plus = True
             pick_counter = 1
             round_counter += 1
-        
-        current_team_id = team_ids_ordered[current_team_index]
+
+        # Debugging: After Update
+        # print(f"After Update: Current Team Index: {current_team_index}, Draft Direction: {draft_direction}")
+
+        # Update positions
         initial_positions = ['QB', 'RB1', 'RB2', 'WR1', 'WR2', 'TE', 'RQB', 'RRB', 'RWR', 'RTE']
         positions_with_none = [{'position': pos, 'player': None} for pos in initial_positions]
-        # Assuming you have a queryset of filled positions from your database
         filled_positions = Position.objects.filter(team_id=current_team_id).select_related('player')
-
-        # Convert filled_positions to a dictionary for efficient lookups
         filled_positions_dict = {pos.position: pos.player for pos in filled_positions}
-
-        # Update positions_with_none with players from filled_positions where applicable
         for position in positions_with_none:
             if position['position'] in filled_positions_dict:
-                playerSwap = filled_positions_dict[position['position']]
-                position['player'] = playerSwap.name if playerSwap else None
-        
-        
+                player_swap = filled_positions_dict[position['position']]
+                position['player'] = player_swap.name if player_swap else None
         positions_global = positions_with_none
-        
+
         return redirect('Drafting')
-        
+
     except json.JSONDecodeError:
-        # If there's an error in parsing JSON
         return JsonResponse({'status': 'error', 'message': 'Invalid JSON data received.'}, status=400)
     except KeyError:
-        # If the expected key ('playerId') is not found in the data
         return JsonResponse({'status': 'error', 'message': 'Missing playerId in data.'}, status=400)
     except Exception as e:
-        # General exception handler (optional, but good for catching unexpected errors)
+        print(f"Error: {str(e)}")  # Debugging exception
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
     
 @csrf_exempt
 def reset_players(request):
-    global team_ids_ordered, positions_global, round_1_plus, draft_list, pick_counter, round_counter
+    global positions_global, round_1_plus, draft_list, pick_counter, round_counter, current_team_index
+    
+    # Reset global variables
     positions_global = None
     round_1_plus = False
     draft_list = []
     pick_counter = 1
     round_counter = 1
-    team_ids_ordered = list(Team.objects.order_by('id').values_list('id', flat=True))
+    current_team_index = 0
 
-    random.shuffle(team_ids_ordered)
-    for i in team_ids_ordered:
-        team = Team.objects.get(id=i)
-        print(team.name)
-    print("\n\n", team_ids_ordered, "\n\n")
     try:
-        # Delete all position instances, effectively detaching players from teams
-        Position.objects.all().delete()
-        Player.objects.update(drafted=False)
+        # Fetch all teams
+        teams = list(Team.objects.all())
+
+        # Randomize the order of teams for draft
+        random.shuffle(teams)
+
+        # Assign new draft order to teams based on random shuffle
+        for index, team in enumerate(teams, start=1):
+            team.draftPick = index
+            team.save()
+
+        # Print the new draft order
+        for team in teams:
+            print(f"Team: {team.name}, draftPick: {team.draftPick}")
+        
+        # Reset player and position data
+        Position.objects.all().delete()  # Delete all position instances
+        Player.objects.update(drafted=False)  # Reset drafted status for all players
+
         return redirect("team_create")
     except Exception as e:
+        # Return an error response in case of failure
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     
 @csrf_exempt
@@ -252,11 +274,20 @@ reserve_positions = {
     'TE': ['RTE']
 }
 
+def generate_playoff_matchups(week, teams):
+    """Generate playoff matchups for a given week."""
+    if len(teams) % 2 != 0:
+        raise ValueError("Number of teams must be even for matchups")
+
+    for i in range(len(teams) // 2):
+        hometeam = teams[i]
+        awayteam = teams[-(i + 1)]  # Pair teams by seed
+        Schedule.objects.create(week=week, hometeam=hometeam, awayteam=awayteam)
 
 
 @csrf_exempt
 def matchups(request):
-    weeks = range(1, 17)  # Assuming NFL weeks 1 through 17
+    weeks = range(1, 18)  # Assuming NFL weeks 1 through 17
     matchups_data = {}
     primary_positions = ['QB', 'RB1', 'RB2', 'WR1', 'WR2', 'TE']
     reserve_positions = {
@@ -268,6 +299,7 @@ def matchups(request):
         'TE': ['RTE']
     }
     
+    # Resetting the team objects ever reload. Slower and less effecient -- will change in the future
     Team.objects.update(wins=0, losses=0, totalPoints=0)
 
 
@@ -284,10 +316,10 @@ def matchups(request):
             awayteam_points = calculate_fantasy_points(sorted_awayteam_roster, week, primary_positions, reserve_positions)
             
             matchup.hometeam.roster = sorted_hometeam_roster
-            matchup.awayteam.roster = sorted_awayteam_roster
-            matchup.hometeam.points = hometeam_points
-            matchup.awayteam.points = awayteam_points
-            
+            matchup.awayteam.roster = sorted_awayteam_roster            
+            matchup.hometeam.totalPoints = hometeam_points
+            matchup.awayteam.totalPoints = awayteam_points
+
             # Determine the result and update wins/losses
             if hometeam_points > awayteam_points:
                 matchup.hometeam.wins += 1
@@ -323,6 +355,34 @@ def matchups(request):
         
         top_scorers[week] = sorted_week_top_scorers
 
+
+    # Generate playoff rounds
+    standings = Team.objects.order_by('-wins', '-totalPoints')  # Sort by wins, then total points
+    if not Schedule.objects.filter(week=15).exists():  # Generate week 15 if it doesn't exist
+        top_8 = standings[:8]  # Get top 8 teams
+        generate_playoff_matchups(15, top_8)
+
+    # Simulate playoff rounds dynamically
+    current_week = 15
+    while Schedule.objects.filter(week=current_week).exists():
+        week_matchups = Schedule.objects.filter(week=current_week).select_related('hometeam', 'awayteam')
+        winners = []
+
+        for matchup in week_matchups:
+            hometeam_roster = matchup.hometeam.get_roster_with_stats()
+            awayteam_roster = matchup.awayteam.get_roster_with_stats()
+
+            hometeam_points = calculate_fantasy_points(hometeam_roster, current_week, primary_positions, reserve_positions)
+            awayteam_points = calculate_fantasy_points(awayteam_roster, current_week, primary_positions, reserve_positions)
+
+            if hometeam_points > awayteam_points:
+                winners.append(matchup.hometeam)  # Add winner to the list
+            else:
+                winners.append(matchup.awayteam)  # Add winner to the list
+
+        if len(winners) > 1:  # If more than one team, create the next week's matchups
+            generate_playoff_matchups(current_week + 1, winners)
+        current_week += 1
         
 
     return render(request, 'matchups.html', {'matchups': matchups_data, 'weeks': weeks, 'top_scorers':top_scorers})
@@ -344,7 +404,7 @@ def generate_schedule(request):
         teams.append(None)  # Adding a dummy team for bye-weeks
 
     # Ensure we are planning for 14 weeks
-    total_weeks = 15
+    total_weeks = 14
 
     # Generate the schedule for 14 weeks
     for week in range(total_weeks):
