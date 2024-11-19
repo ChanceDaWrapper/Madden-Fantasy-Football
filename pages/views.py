@@ -6,53 +6,60 @@ from django.views.decorators.http import require_http_methods
 from django.shortcuts import get_object_or_404, render, redirect
 from django.views.decorators.http import require_http_methods
 from django.views.generic import TemplateView
-from teams.models import Team, Player, WeeklyStat, Position, Schedule
+from teams.models import Team, Player, WeeklyStat, Position, Schedule, DraftState, PlayerSelection
 from django.db.models import Prefetch
 import pandas as pd
 from operator import attrgetter
 
-global current_team_index
-draft_direction = 1 # Draft direction: 1 for forward, -1 for backward
-
-round_1_plus = False # Initial round variable
 positions_global = None # Global positions variable for display in drafting.html
-
-draft_list = [] # Total drafted list
-round_counter = 1
-pick_counter = 1
 
 class HomePageView(TemplateView):
     print()
     template_name = 'home.html'
     
 def playerData(request):
-    global current_team_index, draft_direction, round_1_plus, draft_list
+
+    draft_state, created = DraftState.objects.get_or_create(id=1)
     
     # Fetch teams ordered by their "DraftPick" field
     teams = Team.objects.order_by('draftPick')
     team_ids_ordered = [team.id for team in teams]
 
-    print(current_team_index)
+    # Debug print statement to ensure teams are listed correctly
     for team in teams:
         print(team.name)
     
-    current_team_id = team_ids_ordered[current_team_index]
-    positions = Position.objects.filter(team_id=current_team_id)
 
+    current_team_id = team_ids_ordered[draft_state.current_team_index]
+    positions = Position.objects.filter(team_id=current_team_id)
     # Fetch all players from the database
     players = Player.objects.all().order_by('-lastSeasonPts')
     team = Team.objects.get(id=current_team_id)
     team_name = team.name
-    if not round_1_plus:
-        draft_direction = 1
-        # If there are no positions yet, we initialize the setup
-        initial_positions = ['QB', 'RB1', 'RB2', 'WR1', 'WR2', 'TE', 'RQB', 'RRB', 'RWR', 'RTE']
-        positions = [{'position': pos, 'player': None} for pos in initial_positions]
-    else: 
-        positions = positions_global
     
-    print("\n\nGetting to last bit\n\n")
-    return render(request, 'drafting.html', {'players': players, 'positions': positions, 'fantasy_team': team_name, 'draft_list': draft_list})
+    # Fetch all selections from PlayerSelection
+    selections = PlayerSelection.objects.all().order_by('round', 'pick')
+
+    # Format the selections into the draft_list
+    draft_list = [
+        f"{selection.round}.{selection.pick}: {selection.team.name} -- {selection.player.position} {selection.player.name}"
+        for selection in selections
+    ]
+
+    # Handle positions dynamically
+    initial_positions = ['QB', 'RB1', 'RB2', 'WR1', 'WR2', 'TE', 'RQB', 'RRB', 'RWR', 'RTE']
+    positions_with_none = [{'position': pos, 'player': None} for pos in initial_positions]
+    filled_positions = Position.objects.filter(team_id=current_team_id).select_related('player')
+    filled_positions_dict = {pos.position: pos.player for pos in filled_positions}
+
+    # Map players to their positions
+    for position in positions_with_none:
+        if position['position'] in filled_positions_dict:
+            player = filled_positions_dict[position['position']]
+            position['player'] = player.name if player else None
+
+
+    return render(request, 'drafting.html', {'players': players, 'positions': positions_with_none, 'fantasy_team': team_name, 'draft_list': draft_list})
 
 
 
@@ -89,83 +96,104 @@ def deleteTeam(request, team_id):
 @csrf_exempt
 @require_http_methods(["POST"])
 def draft_player(request):
-    global current_team_index, draft_direction, round_1_plus, positions_global, draft_list, pick_counter, round_counter
+    print("Draft Player endpoint hit")
 
     try:
+        # Load or create the draft state
+        draft_state, created = DraftState.objects.get_or_create(id=1)
+        print(f"Draft state: {draft_state}")
+
         # Parse JSON data
         data = json.loads(request.body)
         player_id = data['playerId']
         position = data.get('universalSpot')
+        print(f"Request data: {data}")
 
-        # Fetch teams and team IDs
+
+        # Fetch all teams and their IDs
         teams = Team.objects.order_by('draftPick')
         team_ids_ordered = [team.id for team in teams]
-        current_team_id = team_ids_ordered[current_team_index]
+        print(f"Teams in order: {team_ids_ordered}")
+
+        # Get the current team ID
+        current_team_id = team_ids_ordered[draft_state.current_team_index]
+        print(f"Current team ID: {current_team_id}")
 
         # Draft the player
         player = Player.objects.get(id=player_id)
         team = Team.objects.get(id=current_team_id)
-        team.draft_player(player, position)
+        print(f"Drafting player {player.name} for team {team.name} at position {position}")
+
+        team.draft_player(player, position)  # Assuming this method exists in your Team model
         player.drafted = True
         player.save()
 
-        # Append to draft list
-        str1 = f"{round_counter}.{pick_counter}: {team.name} -- {player.position} {player}"
-        draft_list.append(str1)
-        pick_counter += 1
+        # Add to PlayerSelection
+        PlayerSelection.objects.create(
+            round=draft_state.round_counter,
+            pick=draft_state.pick_counter,
+            team=team,
+            player=player,
+        )
 
-        # Debugging: Check current index and direction
-        # print(f"Before Update: Current Team Index: {current_team_index}, Draft Direction: {draft_direction}")
+        draft_state.pick_counter += 1
 
-        # Update team index
-        current_team_index += draft_direction
+        # Update draft state (team index and round management)
+        draft_state.current_team_index += draft_state.draft_direction
+        if draft_state.current_team_index >= len(team_ids_ordered) or draft_state.current_team_index < 0:
+            draft_state.draft_direction *= -1  # Reverse direction for snake draft
+            draft_state.current_team_index = max(0, min(draft_state.current_team_index, len(team_ids_ordered) - 1))
+            draft_state.round_counter += 1
 
-        # Check if end of the draft order is reached
-        if current_team_index >= len(team_ids_ordered) or current_team_index < 0:
-            draft_direction *= -1  # Reverse direction
-            current_team_index = max(0, min(current_team_index, len(team_ids_ordered) - 1))
-            round_1_plus = True
-            pick_counter = 1
-            round_counter += 1
+        # Save updated draft state
+        draft_state.save()
 
-        # Debugging: After Update
-        # print(f"After Update: Current Team Index: {current_team_index}, Draft Direction: {draft_direction}")
-
-        # Update positions
+        # Handle positions logic
         initial_positions = ['QB', 'RB1', 'RB2', 'WR1', 'WR2', 'TE', 'RQB', 'RRB', 'RWR', 'RTE']
         positions_with_none = [{'position': pos, 'player': None} for pos in initial_positions]
         filled_positions = Position.objects.filter(team_id=current_team_id).select_related('player')
         filled_positions_dict = {pos.position: pos.player for pos in filled_positions}
+
+        # Map players to their positions
         for position in positions_with_none:
             if position['position'] in filled_positions_dict:
                 player_swap = filled_positions_dict[position['position']]
                 position['player'] = player_swap.name if player_swap else None
+
+        # Update positions_global if needed (or return positions as needed)
         positions_global = positions_with_none
 
-        return redirect('Drafting')
+        return JsonResponse({'status': 'success', 'message': 'Player drafted successfully'})
 
     except json.JSONDecodeError:
         return JsonResponse({'status': 'error', 'message': 'Invalid JSON data received.'}, status=400)
     except KeyError:
         return JsonResponse({'status': 'error', 'message': 'Missing playerId in data.'}, status=400)
     except Exception as e:
-        print(f"Error: {str(e)}")  # Debugging exception
+        print(f"Error: {str(e)}")  # Debugging
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
 
     
 @csrf_exempt
 def reset_players(request):
-    global positions_global, round_1_plus, draft_list, pick_counter, round_counter, current_team_index
-    
     # Reset global variables
+    global positions_global
     positions_global = None
-    round_1_plus = False
-    draft_list = []
-    pick_counter = 1
-    round_counter = 1
-    current_team_index = 0
 
     try:
+
+        draft_state, created = DraftState.objects.get_or_create(id=1)
+
+        draft_state.current_team_index = 0
+        draft_state.draft_direction = 1
+        draft_state.pick_counter = 1
+        draft_state.round_counter = 1
+        draft_state.is_round_reversed = False
+
+        draft_state.save()
+
         # Fetch all teams
         teams = list(Team.objects.all())
 
@@ -184,6 +212,7 @@ def reset_players(request):
         # Reset player and position data
         Position.objects.all().delete()  # Delete all position instances
         Player.objects.update(drafted=False)  # Reset drafted status for all players
+        PlayerSelection.objects.all().delete()
 
         return redirect("team_create")
     except Exception as e:

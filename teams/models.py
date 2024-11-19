@@ -99,3 +99,22 @@ class Schedule(models.Model):
     hometeam = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='hometeam') # Field to attach team to the schedule model
     awayteam = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='awayteam') # Field to attach team to the schedule model
     
+
+from django.db import models
+
+class DraftState(models.Model):
+    current_team_index = models.IntegerField(default=0)
+    draft_direction = models.IntegerField(default=1)  # 1 for forward, -1 for reverse
+    pick_counter = models.IntegerField(default=1)
+    round_counter = models.IntegerField(default=1)
+    is_round_reversed = models.BooleanField(default=False)
+
+class PlayerSelection(models.Model):
+    round = models.PositiveIntegerField(default=0)
+    pick = models.PositiveIntegerField(default=0)
+    team = models.ForeignKey('Team', on_delete=models.CASCADE, related_name='player')
+    player = models.ForeignKey('Player', on_delete=models.CASCADE, related_name='player')
+    
+    class Meta:
+        ordering = ['round', 'pick']
+        unique_together = ('player',)  # Prevents duplicate drafts of the same player

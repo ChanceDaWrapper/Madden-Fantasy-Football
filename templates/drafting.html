@@ -185,61 +185,66 @@
       
       // DRAFTING A PLAYER
       function draftPlayer(playerId, playerName, playerPosition) {
-        console.log('Drafting player:', playerName)
-        universalSpot = null
-        // Map player positions to roster spots
+        console.log('Drafting player:', playerName, playerId, playerPosition);
+        universalSpot = null; // Initialize universalSpot to a default value
+
         const positionMapping = {
           QB: ['QB', 'RQB'],
-          HB: ['RB1', 'RB2', 'RRB'], // Handle HB as RB and map to available spots
-          WR: ['WR1', 'WR2', 'RWR'], // Map WR to available spots
-          TE: ['TE', 'RTE']
-        }
-        // Find the first available spot for the player
-        const availableSpots = positionMapping[playerPosition]
-        let assigned = false
-      
-        if (Array.isArray(availableSpots)) {
-          // For positions with multiple possible spots
+          HB: ['RB1', 'RB2', 'RRB'],
+          WR: ['WR1', 'WR2', 'RWR'],
+          TE: ['TE', 'RTE'],
+        };
+
+        const availableSpots = positionMapping[playerPosition];
+        let assigned = false;
+
+        if (availableSpots) {
           for (let spot of availableSpots) {
-            if (!document.getElementById(spot).querySelector('.player-name').textContent) {
-              document.getElementById(spot).querySelector('.player-name').textContent = playerName
-              assigned = true
-              universalSpot = spot
-              break // Stop once assigned
+            const spotElement = document.getElementById(spot);
+            if (spotElement && !spotElement.querySelector('.player-name').textContent) {
+              spotElement.querySelector('.player-name').textContent = playerName;
+              universalSpot = spot; // Assign the spot here
+              assigned = true;
+              break; // Stop once assigned
             }
           }
-        } else {
-          // For positions with a single possible spot
-          if (!document.getElementById(availableSpots).querySelector('.player-name').textContent) {
-            document.getElementById(availableSpots).querySelector('.player-name').textContent = playerName
-            assigned = true
-          }
         }
-      
+
         if (!assigned) {
-          // Handle case where no spots are available (e.g., all RB spots filled)
-          console.error('No available spots for', playerName, 'at position', playerPosition)
-          // Optionally, show an error message to the user
+          console.error(`No available spots for ${playerName} (${playerPosition})`);
+          return; // Exit the function early if no spot is assigned
         }
-      
-        // Once a spot is found and assigned, make an AJAX call to draft the player in backend
-        if (assigned) {
-          console.log('Check 3')
-          const positionDiv = document.getElementById(universalSpot) // 'universalSpot' is the position name/ID
-          if (positionDiv) {
-            console.log('Check 4')
-            positionDiv.querySelector('.player-name').textContent = playerName
-          }
-          fetch('/draft_player', {
-            method: 'POST',
-            body: JSON.stringify({ playerId, universalSpot })
+
+        console.log('Assigned to:', universalSpot);
+
+        // Make the fetch call to draft the player
+        fetch('/draft_player', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ playerId, universalSpot }),
+        })
+          .then((response) => {
+            console.log('Response:', response);
+            if (!response.ok) {
+              return response.text().then((text) => {
+                console.error('Error response:', text);
+              });
+            }
+            return response.json();
           })
-          // Set a timeout so the "draft_player" function can run and reset the datatable
-          setTimeout(function () {
-            window.location.reload(true)
-          }, 500)
-        }
+          .then((data) => {
+            console.log('Draft successful:', data);
+            setTimeout(() => {
+              window.location.reload(true);
+            }, 500);
+          })
+          .catch((error) => {
+            console.error('Draft player error:', error);
+          });
       }
+
       
       function searchPlayers() {
         var input, filter, table, tr, td, i, txtValue
