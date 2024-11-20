@@ -13,7 +13,7 @@ class Player(models.Model):
     weight = models.PositiveIntegerField()  # Weight could be stored in kg as a positive integer
     portraitId = models.PositiveIntegerField()  # Portrait ID is a positive integer
     position = models.CharField(max_length=10)  # Position usually is a short string like 'QB'
-    lastSeasonPts = models.PositiveIntegerField()  # Points are typically positive
+    lastSeasonPts = models.PositiveIntegerField(default=0)  # Points are typically positive
     drafted = models.BooleanField(default=False)  # Boolean should have a default value
         
     def __str__(self):

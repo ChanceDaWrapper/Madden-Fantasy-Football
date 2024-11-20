@@ -1,37 +1,49 @@
 <!DOCTYPE html>
+<html>
 <head>
     <meta charset="UTF-8">
     <title>Fantasy Football League</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'pages/home.css' %}">
-
 </head>
-
 <body>
     {% include 'header.html' %}
 
     {% block content %}
     <div class="content">
         <h1>Madden Fantasy Football</h1>
+
+        <!-- First Section -->
         <div class="middle-container">
-            <div class="side-image">
-                <img src="{% static 'files/rams_rb1.jpg' %}" alt="Football Action" class="image-1">
-            </div>
             <div class="side-text">
-                <h3>Build Your Dream Team</h3>
-                <p>Step into the shoes of a manager and build your dream team from the ground up. Select your favorite players, devise strategies, and compete for glory in the Fantasy Football Champions League.</p>
+                <h2 class="header-1">Data-Driven Precision</h2>
+                <p class="paragraph-1">
+                    No more random development outcomes. Our AI algorithm employs meticulous
+                    feature engineering to extract essential player characteristics that will
+                    genuinely impact performance. These features are then skillfully utilized
+                    to calculate precise player values and potential development traits.
+                </p>
+            </div>
+            <div class="side-image">
+                <img src="{% static 'files/rams_rb1.jpg' %}" alt="Rams Running Back" class="image-1">
             </div>
         </div>
+
+        <!-- Second Section -->
         <div class="middle-container">
-            <div class="side-text">
-                <h3>Compete With Friends</h3>
-                <p>Join a vibrant community of football enthusiasts. Challenge your friends in head-to-head matchups or join public leagues to test your management skills against others.</p>
-            </div>
             <div class="side-image">
-                <img src="{% static 'files/lamar_jackson.jpg' %}" alt="Quarterback in Action" class="image-1">
+                <img src="{% static 'files/lamar_jackson.jpg' %}" alt="Lamar Jackson" class="image-1">
+            </div>
+            <div class="side-text">
+                <h2 class="header-1">Unparalleled Realism</h2>
+                <p class="paragraph-1">
+                    Step into the shoes of a manager and build your dream team from the ground
+                    up. Select your favorite players, devise strategies, and compete for glory
+                    in the Fantasy Football Champions League.
+                </p>
             </div>
         </div>
     </div>
-
     {% endblock %}
 </body>
+</html>

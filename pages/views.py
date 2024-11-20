@@ -144,6 +144,7 @@ def draft_player(request):
             draft_state.draft_direction *= -1  # Reverse direction for snake draft
             draft_state.current_team_index = max(0, min(draft_state.current_team_index, len(team_ids_ordered) - 1))
             draft_state.round_counter += 1
+            draft_state.pick_counter = 1
 
         # Save updated draft state
         draft_state.save()

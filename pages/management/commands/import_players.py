@@ -16,9 +16,9 @@ class Command(BaseCommand):
 
         # Process each row in the DataFrame
         for _, row in df_players.iterrows():
-            Player.objects.update_or_create(
+            player, created = Player.objects.get_or_create(
                 rosterId=row['rosterId'],
-                defaults={
+                defaults={  # Values for new players
                     'name': row['fullName'],
                     'team': row['team'],
                     'age': row['age'],
@@ -27,9 +27,21 @@ class Command(BaseCommand):
                     'portraitId': row['portraitId'],
                     'position': row['position'],
                     'lastSeasonPts': 0,
-                    'drafted': False  # or True, based on your logic
+                    'drafted': False
                 }
             )
+            
+            if not created:
+                # Update all fields except lastSeasonPts
+                player.name = row['fullName']
+                player.team = row['team']
+                player.age = row['age']
+                player.height = row['height']
+                player.weight = row['weight']
+                player.portraitId = row['portraitId']
+                player.position = row['position']
+                player.drafted = False  # or True, based on your logic
+                player.save()
 
         self.stdout.write(self.style.SUCCESS('Successfully imported player data'))
 
