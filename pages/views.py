@@ -225,34 +225,37 @@ def rosters(request):
     # Requesting all teams from the Team model
     teams = Team.objects.all()
 
-    # Create a dictionary to store the teams and rosters
+    # Define primary positions and corresponding reserve positions
+    primary_positions = ['QB', 'RB1', 'RB2', 'WR1', 'WR2', 'TE']
+    reserve_positions = {
+        'QB': ['RQB'],
+        'RB1': ['RRB'],
+        'RB2': ['RRB'],
+        'WR1': ['RWR'],
+        'WR2': ['RWR'],
+        'TE': ['RTE']
+    }
+
     team_rosters = {}
+
+    # Loop through each team
     for team in teams:
-        # Get the positions for each team
-        # current_team_id = Team.object.filter(name = team)
-        positions = Position.objects.filter(team=team)
-        # Iterate through each position to access its fields
-        for position in positions:
-            print(position.player.name)  # Now correctly accessing the position field of each Position object
-        
-        initial_positions = ['QB', 'RB1', 'RB2', 'WR1', 'WR2', 'TE', 'RQB', 'RRB', 'RWR', 'RTE']
-        positions_with_none = [{'position': pos, 'player': None} for pos in initial_positions]
-        # Assuming you have a queryset of filled positions from your database
-        filled_positions = Position.objects.filter(team=team).select_related('player')
+        # Fetch the positions for the current team
+        team_positions = Position.objects.filter(team=team).select_related('player')
 
-        # Convert filled_positions to a dictionary for efficient lookups
-        filled_positions_dict = {pos.position: pos.player for pos in filled_positions}
+        # Sort the team positions by primary and reserve positions
+        sorted_positions = sorted(
+            team_positions,
+            key=lambda p: primary_positions.index(p.position) if p.position in primary_positions else (
+                len(primary_positions) + next((i for i, pos_list in enumerate(reserve_positions.values()) if p.position in pos_list), float('inf'))
+            )
+        )
 
-        # Update positions_with_none with players from filled_positions where applicable
-        for position in positions_with_none:
-            if position['position'] in filled_positions_dict:
-                playerSwap = filled_positions_dict[position['position']]
-                position['player'] = playerSwap.name if playerSwap else None
-        
-        
-        team_rosters[team] = positions_with_none
+        # Assign sorted positions to the current team's roster
+        team_rosters[team] = sorted_positions
 
     return render(request, 'rosters.html', {'team_rosters': team_rosters})
+
 
 
 from decimal import Decimal
@@ -305,6 +308,7 @@ reserve_positions = {
 }
 
 def generate_playoff_matchups(week, teams):
+    print(teams)
     """Generate playoff matchups for a given week."""
     if len(teams) % 2 != 0:
         raise ValueError("Number of teams must be even for matchups")
@@ -330,7 +334,7 @@ def matchups(request):
     }
     
     # Resetting the team objects ever reload. Slower and less effecient -- will change in the future
-    Team.objects.update(wins=0, losses=0, totalPoints=0)
+    Team.objects.update(wins=0, losses=0, totalPoints=0, totalPointsAllowed = 0)
 
 
     for week in weeks:
@@ -347,8 +351,14 @@ def matchups(request):
             
             matchup.hometeam.roster = sorted_hometeam_roster
             matchup.awayteam.roster = sorted_awayteam_roster            
-            matchup.hometeam.totalPoints = hometeam_points
-            matchup.awayteam.totalPoints = awayteam_points
+            matchup.hometeam.points = hometeam_points
+            matchup.awayteam.points = awayteam_points
+
+            matchup.hometeam.totalPoints += hometeam_points
+            matchup.awayteam.totalPoints += awayteam_points
+
+            matchup.hometeam.totalPointsAllowed += awayteam_points
+            matchup.awayteam.totalPointsAllowed += hometeam_points
 
             # Determine the result and update wins/losses
             if hometeam_points > awayteam_points:
@@ -364,7 +374,8 @@ def matchups(request):
             else:
                 matchup.hometeam.result_class = 'tie'
                 matchup.awayteam.result_class = 'tie'
-
+            matchup.hometeam.save()
+            matchup.awayteam.save()
         matchups_data[week] = week_matchups
 
     # Gather top scorers for each position in each week
@@ -386,33 +397,40 @@ def matchups(request):
         top_scorers[week] = sorted_week_top_scorers
 
 
-    # Generate playoff rounds
-    standings = Team.objects.order_by('-wins', '-totalPoints')  # Sort by wins, then total points
-    if not Schedule.objects.filter(week=15).exists():  # Generate week 15 if it doesn't exist
-        top_8 = standings[:8]  # Get top 8 teams
-        generate_playoff_matchups(15, top_8)
+    # Check if week 14 stats exist
+    if WeeklyStat.objects.filter(week=14).exists():
+        print("Week 14 stats exist. Proceeding to playoffs...")
 
-    # Simulate playoff rounds dynamically
-    current_week = 15
-    while Schedule.objects.filter(week=current_week).exists():
-        week_matchups = Schedule.objects.filter(week=current_week).select_related('hometeam', 'awayteam')
-        winners = []
+        # Generate playoff rounds
+        standings = Team.objects.order_by('-wins', '-totalPoints')  # Sort by wins, then total points
+        if not Schedule.objects.filter(week=15).exists():  # Generate week 15 if it doesn't exist
+            if standings.count() >= 8:
+                top_8 = standings[:8]  # Get top 8 teams
+                generate_playoff_matchups(15, top_8)
 
-        for matchup in week_matchups:
-            hometeam_roster = matchup.hometeam.get_roster_with_stats()
-            awayteam_roster = matchup.awayteam.get_roster_with_stats()
+        # Simulate playoff rounds dynamically
+        current_week = 15
+        while Schedule.objects.filter(week=current_week).exists():
+            week_matchups = Schedule.objects.filter(week=current_week).select_related('hometeam', 'awayteam')
+            winners = []
 
-            hometeam_points = calculate_fantasy_points(hometeam_roster, current_week, primary_positions, reserve_positions)
-            awayteam_points = calculate_fantasy_points(awayteam_roster, current_week, primary_positions, reserve_positions)
+            for matchup in week_matchups:
+                hometeam_roster = matchup.hometeam.get_roster_with_stats()
+                awayteam_roster = matchup.awayteam.get_roster_with_stats()
 
-            if hometeam_points > awayteam_points:
-                winners.append(matchup.hometeam)  # Add winner to the list
-            else:
-                winners.append(matchup.awayteam)  # Add winner to the list
+                hometeam_points = calculate_fantasy_points(hometeam_roster, current_week, primary_positions, reserve_positions)
+                awayteam_points = calculate_fantasy_points(awayteam_roster, current_week, primary_positions, reserve_positions)
 
-        if len(winners) > 1:  # If more than one team, create the next week's matchups
-            generate_playoff_matchups(current_week + 1, winners)
-        current_week += 1
+                if hometeam_points > awayteam_points:
+                    winners.append(matchup.hometeam)  # Add winner to the list
+                else:
+                    winners.append(matchup.awayteam)  # Add winner to the list
+
+            if len(winners) > 1:  # If more than one team, create the next week's matchups
+                generate_playoff_matchups(current_week + 1, winners)
+            current_week += 1
+    else:
+        print("Week 14 stats are not yet uploaded. Cannot proceed to playoffs.")
         
 
     return render(request, 'matchups.html', {'matchups': matchups_data, 'weeks': weeks, 'top_scorers':top_scorers})
@@ -482,6 +500,32 @@ def upload_stats(request):
             print("It worked correctly")
         except Exception as e:
             print(f"It did not work: {str(e)}")
+
+        # Update records when files are uploaded
+        week = int(request.POST.get('week'))
+        week_matchups = Schedule.objects.filter(week=week).select_related('hometeam', 'awayteam')
+        for matchup in week_matchups:
+            hometeam_roster = matchup.hometeam.get_roster_with_stats()
+            awayteam_roster = matchup.awayteam.get_roster_with_stats()
+
+            sorted_hometeam_roster = sorted(hometeam_roster, key=lambda p: primary_positions.index(p.position) if p.position in primary_positions else (len(primary_positions) + next((i for i, pos_list in enumerate(reserve_positions.values()) if p.position in pos_list), float('inf'))))
+            sorted_awayteam_roster = sorted(awayteam_roster, key=lambda p: primary_positions.index(p.position) if p.position in primary_positions else (len(primary_positions) + next((i for i, pos_list in enumerate(reserve_positions.values()) if p.position in pos_list), float('inf'))))
+
+            hometeam_points = calculate_fantasy_points(sorted_hometeam_roster, week, primary_positions, reserve_positions)
+            awayteam_points = calculate_fantasy_points(sorted_awayteam_roster, week, primary_positions, reserve_positions)
+            
+            matchup.hometeam.roster = sorted_hometeam_roster
+            matchup.awayteam.roster = sorted_awayteam_roster            
+            matchup.hometeam.totalPoints = hometeam_points
+            matchup.awayteam.totalPoints = awayteam_points
+
+            # Determine the result and update wins/losses
+            if hometeam_points > awayteam_points:
+                matchup.hometeam.wins += 1
+                matchup.awayteam.losses += 1
+            elif hometeam_points < awayteam_points:
+                matchup.awayteam.wins += 1
+                matchup.hometeam.losses += 1
 
     return render(request, 'upload.html')
 
@@ -584,3 +628,10 @@ def season_totals(request):
         sorted_season_totals[pos] = sorted(players.values(), key=lambda x: x['total_points'], reverse=True)[:30]
 
     return render(request, 'season_totals.html', {'season_totals': sorted_season_totals})
+
+
+@csrf_exempt
+def records(request):
+    team_records = Team.objects.all().order_by('-wins')
+
+    return render(request, 'records.html', {'team_records' : team_records})

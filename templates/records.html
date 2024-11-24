@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Matchups</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'pages/records.css' %}">
+</head>
+<body>
+    {% include 'header.html' %}
+    <div class="main-container">
+        <h1>Team Records</h1>
+        <div class="teams">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Team Name</th>
+                        <th>Record (W-L)</th>
+                        <th>Total Points</th>
+                        <th>Total Points Allowed</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for team in team_records %}
+                        <tr>
+                            <td>{{ team.name }}</td>
+                            <td>{{ team.wins }} - {{ team.losses }}</td>
+                            <td>{{ team.totalPoints }}</td>
+                            <td>{{ team.totalPointsAllowed }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3">No Teams Found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

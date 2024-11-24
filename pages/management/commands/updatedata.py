@@ -27,8 +27,17 @@ class Command(BaseCommand):
             for player_data in players.values():
                 player = player_data['player']
                 total_points = player_data['total_points']
+
                 try:
+                    
+
+                    # Update the player age
+                    player.age += 1
+                    
+                    # Update the player total points from last season
                     player.lastSeasonPts = total_points
+
+                    # Save the updates to the player
                     player.save()
                     self.stdout.write(self.style.SUCCESS(f'Updated points for {player.name}'))
                 except Player.DoesNotExist:

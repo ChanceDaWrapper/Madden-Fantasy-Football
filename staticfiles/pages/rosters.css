@@ -47,7 +47,7 @@ li {
 }
 
 .team {
-    flex: 1 1 48%; /* Maximizing the width so each team takes up less than half */
+    flex: 1 1 22%; /* Maximizing the width so each team takes up less than half */
     margin: 10px 1%; /* Providing some margin to ensure space between teams */
     box-sizing: border-box; /* Includes padding and border in the width calculations */
 

@@ -60,6 +60,7 @@ class Team(models.Model):
     wins = models.PositiveIntegerField(default=0)
     losses = models.PositiveIntegerField(default=0)
     totalPoints = models.PositiveIntegerField(default=0)
+    totalPointsAllowed = models.PositiveIntegerField(default=0)
     draftPick = models.PositiveIntegerField(default=0)
 
     def draft_player(self, player, position):
