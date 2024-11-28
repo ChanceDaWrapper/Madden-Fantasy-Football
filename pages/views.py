@@ -332,60 +332,46 @@ def matchups(request):
         'WR2': ['RWR'],
         'TE': ['RTE']
     }
-    
-    # Resetting the team objects ever reload. Slower and less effecient -- will change in the future
-    Team.objects.update(wins=0, losses=0, totalPoints=0, totalPointsAllowed = 0)
-
-
-    for week in weeks:
-        week_matchups = Schedule.objects.filter(week=week).select_related('hometeam', 'awayteam')
-        for matchup in week_matchups:
-            hometeam_roster = matchup.hometeam.get_roster_with_stats()
-            awayteam_roster = matchup.awayteam.get_roster_with_stats()
-
-            sorted_hometeam_roster = sorted(hometeam_roster, key=lambda p: primary_positions.index(p.position) if p.position in primary_positions else (len(primary_positions) + next((i for i, pos_list in enumerate(reserve_positions.values()) if p.position in pos_list), float('inf'))))
-            sorted_awayteam_roster = sorted(awayteam_roster, key=lambda p: primary_positions.index(p.position) if p.position in primary_positions else (len(primary_positions) + next((i for i, pos_list in enumerate(reserve_positions.values()) if p.position in pos_list), float('inf'))))
-
-            hometeam_points = calculate_fantasy_points(sorted_hometeam_roster, week, primary_positions, reserve_positions)
-            awayteam_points = calculate_fantasy_points(sorted_awayteam_roster, week, primary_positions, reserve_positions)
-            
-            matchup.hometeam.roster = sorted_hometeam_roster
-            matchup.awayteam.roster = sorted_awayteam_roster            
-            matchup.hometeam.points = hometeam_points
-            matchup.awayteam.points = awayteam_points
-
-            matchup.hometeam.totalPoints += hometeam_points
-            matchup.awayteam.totalPoints += awayteam_points
-
-            matchup.hometeam.totalPointsAllowed += awayteam_points
-            matchup.awayteam.totalPointsAllowed += hometeam_points
-
-            # Determine the result and update wins/losses
-            if hometeam_points > awayteam_points:
-                matchup.hometeam.wins += 1
-                matchup.awayteam.losses += 1
-                matchup.hometeam.result_class = 'winner'
-                matchup.awayteam.result_class = 'loser'
-            elif hometeam_points < awayteam_points:
-                matchup.awayteam.wins += 1
-                matchup.hometeam.losses += 1
-                matchup.hometeam.result_class = 'loser'
-                matchup.awayteam.result_class = 'winner'
-            else:
-                matchup.hometeam.result_class = 'tie'
-                matchup.awayteam.result_class = 'tie'
-            matchup.hometeam.save()
-            matchup.awayteam.save()
-        matchups_data[week] = week_matchups
 
     # Gather top scorers for each position in each week
     top_scorers = {}
     top_scorer_positions = ['QB', 'HB', 'WR', 'TE']
 
     for week in weeks:
+
+        week_matchups = Schedule.objects.filter(week=week).select_related('hometeam', 'awayteam')
+        for matchup in week_matchups:
+            # Get the team rosters
+            hometeam_roster = matchup.hometeam.get_roster_with_stats()
+            awayteam_roster = matchup.awayteam.get_roster_with_stats()
+
+            # Sort the team rosters
+            sorted_hometeam_roster = sorted(hometeam_roster, key=lambda p: primary_positions.index(p.position) if p.position in primary_positions else (len(primary_positions) + next((i for i, pos_list in enumerate(reserve_positions.values()) if p.position in pos_list), float('inf'))))
+            sorted_awayteam_roster = sorted(awayteam_roster, key=lambda p: primary_positions.index(p.position) if p.position in primary_positions else (len(primary_positions) + next((i for i, pos_list in enumerate(reserve_positions.values()) if p.position in pos_list), float('inf'))))
+
+            # Calculate the total team fantasy points for each team
+            hometeam_points = calculate_fantasy_points(sorted_hometeam_roster, week, primary_positions, reserve_positions)
+            awayteam_points = calculate_fantasy_points(sorted_awayteam_roster, week, primary_positions, reserve_positions)
+
+            matchup.hometeam.roster = sorted_hometeam_roster
+            matchup.awayteam.roster = sorted_awayteam_roster            
+            matchup.hometeam.points = hometeam_points
+            matchup.awayteam.points = awayteam_points
+
+            # Logic to decide if a team wins or loses
+            if hometeam_points > awayteam_points:
+                matchup.hometeam.result_class = 'winner'
+                matchup.awayteam.result_class = 'loser'
+            elif hometeam_points < awayteam_points:
+                matchup.hometeam.result_class = 'loser'
+                matchup.awayteam.result_class = 'winner'
+            else:
+                matchup.hometeam.result_class = 'tie'
+                matchup.awayteam.result_class = 'tie'
+            matchups_data[week] = week_matchups
+
         weekly_stats = WeeklyStat.objects.filter(week=week).select_related('player').order_by('player__position', '-fantasy_points')
         week_top_scorers = {pos: [] for pos in top_scorer_positions}
-
         for stat in weekly_stats:
             position = stat.player.position
             if position in week_top_scorers and len(week_top_scorers[position]) < 5:
@@ -501,23 +487,34 @@ def upload_stats(request):
         except Exception as e:
             print(f"It did not work: {str(e)}")
 
+        
+        # try:
+        #     Team.objects.update(wins=0, losses=0, totalPoints=0, totalPointsAllowed = 0)
+        # except Exception as e:
+        #     print(f"It did not work: {str(e)}")
+
         # Update records when files are uploaded
         week = int(request.POST.get('week'))
         week_matchups = Schedule.objects.filter(week=week).select_related('hometeam', 'awayteam')
         for matchup in week_matchups:
+
+            # Get the team rosters
             hometeam_roster = matchup.hometeam.get_roster_with_stats()
             awayteam_roster = matchup.awayteam.get_roster_with_stats()
 
+            # Sort the team rosters
             sorted_hometeam_roster = sorted(hometeam_roster, key=lambda p: primary_positions.index(p.position) if p.position in primary_positions else (len(primary_positions) + next((i for i, pos_list in enumerate(reserve_positions.values()) if p.position in pos_list), float('inf'))))
             sorted_awayteam_roster = sorted(awayteam_roster, key=lambda p: primary_positions.index(p.position) if p.position in primary_positions else (len(primary_positions) + next((i for i, pos_list in enumerate(reserve_positions.values()) if p.position in pos_list), float('inf'))))
 
+            # Calculate the total team fantasy points for each team
             hometeam_points = calculate_fantasy_points(sorted_hometeam_roster, week, primary_positions, reserve_positions)
             awayteam_points = calculate_fantasy_points(sorted_awayteam_roster, week, primary_positions, reserve_positions)
-            
-            matchup.hometeam.roster = sorted_hometeam_roster
-            matchup.awayteam.roster = sorted_awayteam_roster            
-            matchup.hometeam.totalPoints = hometeam_points
-            matchup.awayteam.totalPoints = awayteam_points
+
+            # Calculate the total points for and allowed for each team
+            matchup.hometeam.totalPoints += hometeam_points
+            matchup.hometeam.totalPointsAllowed += awayteam_points
+            matchup.awayteam.totalPoints += awayteam_points
+            matchup.awayteam.totalPointsAllowed += hometeam_points
 
             # Determine the result and update wins/losses
             if hometeam_points > awayteam_points:
@@ -526,6 +523,11 @@ def upload_stats(request):
             elif hometeam_points < awayteam_points:
                 matchup.awayteam.wins += 1
                 matchup.hometeam.losses += 1
+
+            matchup.hometeam.save()
+            matchup.awayteam.save()
+            
+            
 
     return render(request, 'upload.html')
 
@@ -632,6 +634,6 @@ def season_totals(request):
 
 @csrf_exempt
 def records(request):
-    team_records = Team.objects.all().order_by('-wins')
+    team_records = Team.objects.all().order_by('-wins', '-totalPoints')
 
     return render(request, 'records.html', {'team_records' : team_records})

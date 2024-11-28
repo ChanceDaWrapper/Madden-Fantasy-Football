@@ -1,49 +1,148 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fantasy Football League</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'pages/home.css' %}">
+    <!-- Bootstrap CSS -->
+<style>
+    body {
+        background-color: #191919 !important;
+        color: white;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('/static/files/christianmccaffrey1.jpg');
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+        opacity: 0.3;
+        z-index: -1;
+    }
+
+    .hero-section {
+        background: linear-gradient(to bottom, #0d6efd, #084298);
+        padding: 60px 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 12px rgba(255, 255, 255, 0.5); /* Bigger shadow */
+
+    }
+
+    .hero-section h1 {
+        font-size: 2.5rem;
+        color: #fff;
+    }
+
+    .hero-section p {
+        font-size: 1.2rem;
+        color: #eaeaea;
+    }
+
+    .features-section .card {
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.5); /* Bigger shadow */
+        background-color: #212529;
+        border: none;
+        color: white;
+    }
+
+    .features-section .card:hover {
+        box-shadow: 0 0 12px rgba(255, 255, 255, 0.5); /* Bigger shadow */
+        transform: translateY(-5px);
+        transition: all 0.3s ease;
+    }
+
+    .cta-section {
+        background: linear-gradient(to right, #ffc107, #fd7e14);
+        color: black;
+        padding: 40px 20px;
+        text-align: center;
+        border-radius: 8px;
+        box-shadow: 0 0 12px rgba(255, 255, 255, 0.6); /* Bigger shadow */
+
+    }
+
+    .cta-section h2 {
+        font-size: 2rem;
+        margin-bottom: 20px;
+    }
+
+    .cta-section button {
+        background-color: black;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 1rem;
+        border-radius: 5px;
+    }
+
+    .cta-section button:hover {
+        background-color: white;
+        color: black;
+    }
+</style>
 </head>
 <body>
     {% include 'header.html' %}
 
-    {% block content %}
-    <div class="content">
-        <h1>Madden Fantasy Football</h1>
+    <div class="container py-5">
+        <!-- Hero Section -->
+        <div class="hero-section text-center mb-5">
+            <h1>Welcome to Madden Fantasy Football</h1>
+            <p>
+                Build your dream team, compete with friends, and experience a new kind of fantasy football
+                like never before.
+            </p>
+        </div>
 
-        <!-- First Section -->
-        <div class="middle-container">
-            <div class="side-text">
-                <h2 class="header-1">Data-Driven Precision</h2>
-                <p class="paragraph-1">
-                    No more random development outcomes. Our AI algorithm employs meticulous
-                    feature engineering to extract essential player characteristics that will
-                    genuinely impact performance. These features are then skillfully utilized
-                    to calculate precise player values and potential development traits.
-                </p>
+        <!-- Features Section -->
+        <div class="features-section row text-center mb-5">
+            <div class="col-md-4 mb-4">
+                <div class="card p-3 shadow">
+                    <h3>All-New Drafting</h3>
+                    <p>
+                        Create, Draft, and Manage your fantasy football team based on Madden rosters for the first time ever!
+                    </p>
+                </div>
             </div>
-            <div class="side-image">
-                <img src="{% static 'files/rams_rb1.jpg' %}" alt="Rams Running Back" class="image-1">
+            <div class="col-md-4 mb-4">
+                <div class="card p-3 shadow">
+                    <h3>Dynamic Player Development</h3>
+                    <p>
+                        Experience players that grow and evolve throughout the season, with attributes influenced by in-game achievements and real-world trends.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card p-3 shadow">
+                    <h3>Customizable Leagues</h3>
+                    <p>
+                        Design your own fantasy football league with unique scoring systems, draft rules, and team management tools for a truly personalized experience.
+                    </p>
+                </div>
             </div>
         </div>
 
-        <!-- Second Section -->
-        <div class="middle-container">
-            <div class="side-image">
-                <img src="{% static 'files/lamar_jackson.jpg' %}" alt="Lamar Jackson" class="image-1">
-            </div>
-            <div class="side-text">
-                <h2 class="header-1">Unparalleled Realism</h2>
-                <p class="paragraph-1">
-                    Step into the shoes of a manager and build your dream team from the ground
-                    up. Select your favorite players, devise strategies, and compete for glory
-                    in the Fantasy Football Champions League.
-                </p>
-            </div>
-        </div>
+
+        <!-- Call-to-Action Section -->
+        <div class="cta-section">
+            <h2>Ready to Get Started?</h2>
+            <p>
+                Sign up today and experience the ultimate fantasy football experience!
+            </p>
+            <form method="post" action="{% url 'Drafting' %}" enctype="multipart/form-data">
+                <button type="submit">Create Your League</button>        
     </div>
-    {% endblock %}
+
+    <!-- Bootstrap Bundle with Popper -->
 </body>
 </html>

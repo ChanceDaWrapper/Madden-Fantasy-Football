@@ -5,34 +5,65 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All Matchups</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'pages/records.css' %}">
 </head>
+<style>
+    body {
+        background-color: #191919 !important;
+        color: white;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('/static/files/christianmccaffrey1.jpg');
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+        opacity: 0.3;
+        z-index: -1;
+    }
+    .background-color-grey {
+        background-color: #f8f9fa; /* Light grey background */
+    }
+    .table-custom {
+        border-radius: 10px; /* Rounded corners */
+        box-shadow: 0 0 20px rgba(206, 206, 206, 0.6); /* Subtle shadow */
+        overflow: hidden; /* Ensures corners stay rounded with the shadow */
+    }
+</style>
 <body>
     {% include 'header.html' %}
-    <div class="main-container">
-        <h1>Team Records</h1>
-        <div class="teams">
-            <table>
-                <thead>
+    <div class="container my-5">
+        <h1 class="text-center mb-4 text-white">Team Records</h1>
+        <div class="table-responsive text-white text-center p-4">
+            <table class="table table-striped table-hover table-bordered align-middle background-color-grey table-custom">
+                <thead class="table-dark">
                     <tr>
-                        <th>Team Name</th>
-                        <th>Record (W-L)</th>
-                        <th>Total Points</th>
-                        <th>Total Points Allowed</th>
+                        <th scope="col">Team Name</th>
+                        <th scope="col">Record (W-L)</th>
+                        <th scope="col">Total Points</th>
+                        <th scope="col">Total Points Allowed</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for team in team_records %}
-                        <tr>
-                            <td>{{ team.name }}</td>
-                            <td>{{ team.wins }} - {{ team.losses }}</td>
-                            <td>{{ team.totalPoints }}</td>
-                            <td>{{ team.totalPointsAllowed }}</td>
-                        </tr>
+                    <tr>
+                        <td>{{ team.name }}</td>
+                        <td>{{ team.wins }} - {{ team.losses }}</td>
+                        <td>{{ team.totalPoints }}</td>
+                        <td>{{ team.totalPointsAllowed }}</td>
+                    </tr>
                     {% empty %}
-                        <tr>
-                            <td colspan="3">No Teams Found.</td>
-                        </tr>
+                    <tr>
+                        <td colspan="4" class="text-center">No Teams Found.</td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>

@@ -1,127 +1,214 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All Matchups</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'pages/matchups.css' %}">
+    <!-- <link rel="stylesheet" href="{% static 'pages/matchups.css' %}"> -->
     <style>
-        .winner { color: rgb(9, 205, 9); }
-        .loser { color: rgb(255, 0, 0); }
-        .tie { color: orange; }
+        .team.winner {
+            background: linear-gradient(to right, #28a745, #1e7e34);
+            color: white;
+        }
+
+        .team.loser {
+            background: linear-gradient(to right, #dc3545, #c82333);
+            color: white;
+        }
+
+        .team.tie {
+            background: linear-gradient(to right, #ffc107, #e0a800);
+            color: white;
+        }
+
+
+
+        body {
+            background-color: #191919 !important;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('/static/files/christianmccaffrey1.jpg');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: cover;
+            opacity: 0.3;
+            z-index: -1;
+        }
+        /* Reset padding for all unordered lists */
+        ul {
+            padding-left: 0 !important; /* Override Bootstrap's default padding */
+            margin-left: 0; /* Optional: Reset left margin if necessary */
+            list-style-type: none; /* Remove bullets if needed */
+        }
+
+        .points {
+            color: #39a917;
+        }
+        .bg-primary {
+            background-color: #969696 !important; /* Custom blue */
+        }
+
+        .card.shadow-lg {
+            border-radius: 10px;
+        }
     </style>
 </head>
+
 <body>
     {% include 'header.html' %}
-    <div class="container">
-        <!-- Dropdown to select week -->
-        <div class="week-selector">
-            <label for="week-dropdown">Select Week:</label>
-            <select id="week-dropdown" onchange="showSelectedWeek()">
-                {% for week in weeks %}
-                    <option value="week-{{ week }}">Week {{ week }}</option>
-                {% endfor %}
-            </select>
-        </div>
-    
-        <!-- Top Scorers Section -->
-        <div class="top-scorers">
-            <h1>Top Scorers</h1>
-            {% for week, positions in top_scorers.items %}
-                <div class="week-content" id="week-{{ week }}-top-scorers" style="display: none;">
-                    <ul>
-                        <h2>Week {{ week }}</h2>
-                        <div class="positions-list">
-                            {% for position, players in positions.items %}
-                                <div class="position">
-                                    <li><strong>{{ position }}</strong>:
-                                            <ul>
-                                                {% for player_stat in players %}
-                                                    <div class="player-section">
-                                                        <li><strong><span class="player-info">{{ player_stat.player.name }}</span> - <span class="points">{{ player_stat.fantasy_points }} points</span></strong></li>
-                                                    </div>
-                                                {% endfor %}
-                                            </ul>
-                                    </li>
-                                </div>
+    <div class="container-flex text-center p-3">
+        <div class="row row-col-3">
+            <div class="col"></div>
+            <div class="col-2">
+                <div class="card shadow-lg bg-body-tertiary text-black rounded p-4 mb-4">
+                    <div class="d-flex flex-column align-items-center">
+                        <label for="week-dropdown" class="form-label fs-5">Select Week</label>
+                        <select id="week-dropdown" class="form-select w-50" onchange="showSelectedWeek()">
+                            {% for week in weeks %}
+                            <option value="week-{{ week }}">Week {{ week }}</option>
                             {% endfor %}
-                        </div>
-                    </ul>
+                        </select>
+                    </div>
                 </div>
+            </div>
+            <div class="col"></div>
+        </div>
+
+        <!-- Top Scorers Section -->
+
+        <div class="top-scorers">
+            <h1 class="text-white">Top Scorers</h1>
+            {% for week, positions in top_scorers.items %}
+            <div class="week-content" id="week-{{ week }}-top-scorers" style="display: none;">
+                <ul>
+                    <h2 class="text-white">Week {{ week }}</h2>
+                    <div class="row row-col-4">
+                        {% for position, players in positions.items %}
+                        <div class="col">
+                            <div class="card shadow-lg mb-4">
+                                <!-- Card Header -->
+                                <div class="card-header bg-primary text-white text-center">
+                                    <strong>{{ position }}</strong>
+                                </div>
+                                <!-- Card Body -->
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        {% for player_stat in players %}
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="player-info fw-bold">{{ player_stat.player.name }}</span>
+                                                <strong><span class="points text-success">{{ player_stat.fantasy_points }} points</span></strong>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% endfor %}
+                    </div>
+                </ul>
+            </div>
             {% endfor %}
         </div>
-    
+
         <!-- Matchups Section -->
-        <h1>All Matchups</h1>
-        {% for week, week_matchups in matchups.items %}
+        <div class="container my-5">
+            <h1 class="text-center display-4 mb-4 text-white">All Matchups</h1>
+            {% for week, week_matchups in matchups.items %}
             <div class="week-content" id="week-{{ week }}-matchups" style="display: none;">
-                <h2>Week {{ week }}</h2>
-                <div class="matchups-grid">
+                <h2 class="text-center display-6 mb-4 text-white">Week {{ week }}</h2>
+                <div class="row g-4">
                     {% for matchup in week_matchups %}
-                        <div class="matchup">
-                            <div class="team">
-                                <div class="team {{ matchup.hometeam.result_class }}">
-                                    <h3><span class="matchup-name"> {{ matchup.hometeam.name }} </span> 
-                                        <span class="matchup-points"> ({{ matchup.hometeam.points }} points) </span></h3>
-                                </div>
-                                <div class="names">
-                                    <ul>
-                                        {% for position in matchup.hometeam.roster %}
-                                            <div class="player-section">
-                                                <li>
-                                                    <span class="player-info"><strong>{{ position.position }}: {{ position.player.name }} </strong></span>
-                                                    <span class="points">
-                                                        {% for stat in position.player.all_weekly_stats %}
-                                                            {% if stat.week == week %}
-                                                                <strong> {{ stat.fantasy_points }}</strong>
-                                                            {% endif %}
-                                                        {% endfor %}
-                                                    </span>
-                                                </li>
-                                            </div>
-                                        {% empty %}
-                                            <li>No players assigned.</li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
+                    <!-- Matchup Group -->
+                    <div class="col-12">
+                        <div class="card shadow-lg border-0">
+                            <div class="card-header bg-dark text-white text-center py-2">
+                                <h4 class="mb-0">Matchup</h4>
                             </div>
-                            <div class="team">
-                                <div class="team {{ matchup.awayteam.result_class }}">
-                                    <h3><span class="matchup-name"> {{ matchup.awayteam.name }} </span> 
-                                        <span class="matchup-points"> ({{ matchup.awayteam.points }} points) </span></h3>
-                                </div>
-                                <div class="names">
-                                    <ul>
-                                        {% for position in matchup.awayteam.roster %}
-                                            <div class="player-section">
-                                                <li>
-                                                    <span class="player-info"><strong>{{ position.position }}: {{ position.player.name }} </strong></span>
-                                                    <span class="points">
-                                                        {% for stat in position.player.all_weekly_stats %}
-                                                            {% if stat.week == week %}
-                                                                <strong>{{ stat.fantasy_points }}</strong>
-                                                            {% endif %}
-                                                        {% endfor %}
-                                                    </span>
-                                                </li>
-                                            </div>
-                                        {% empty %}
-                                            <li>No players assigned.</li>
-                                        {% endfor %}
-                                    </ul>
+                            <div class="card-body bg-light">
+                                <div class="row align-items-center">
+                                    <!-- Home Team -->
+                                    <div class="col-md-5 text-center">
+                                        <div class="team {{ matchup.hometeam.result_class }} p-3 rounded shadow">
+                                            <h3 class="mb-2">{{ matchup.hometeam.name }}</h3>
+                                            <p class="mb-0 fs-5">
+                                                <strong>{{ matchup.hometeam.points }} points</strong>
+                                            </p>
+                                        </div>
+                                        <ul class="list-group mt-3">
+                                            {% for position in matchup.hometeam.roster %}
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span>{{ position.position }}: {{ position.player.name }}</span>
+                                                <span class="badge bg-success">
+                                                    {% for stat in position.player.all_weekly_stats %}
+                                                    {% if stat.week == week %}
+                                                    {{ stat.fantasy_points }} pts
+                                                    {% endif %}
+                                                    {% endfor %}
+                                                </span>
+                                            </li>
+                                            {% empty %}
+                                            <li class="list-group-item text-muted">No players assigned.</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                    <!-- Versus Section -->
+                                    <div class="col-md-2 text-center">
+                                        <h1 class="display-5 fw-bold">VS</h1>
+                                    </div>
+                                    <!-- Away Team -->
+                                    <div class="col-md-5 text-center">
+                                        <div class="team {{ matchup.awayteam.result_class }} p-3 rounded shadow">
+                                            <h3 class="mb-2">{{ matchup.awayteam.name }}</h3>
+                                            <p class="mb-0 fs-5">
+                                                <strong>{{ matchup.awayteam.points }} points</strong>
+                                            </p>
+                                        </div>
+                                        <ul class="list-group mt-3">
+                                            {% for position in matchup.awayteam.roster %}
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span>{{ position.position }}: {{ position.player.name }}</span>
+                                                <span class="badge bg-success">
+                                                    {% for stat in position.player.all_weekly_stats %}
+                                                    {% if stat.week == week %}
+                                                    {{ stat.fantasy_points }} pts
+                                                    {% endif %}
+                                                    {% endfor %}
+                                                </span>
+                                            </li>
+                                            {% empty %}
+                                            <li class="list-group-item text-muted">No players assigned.</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
                     {% endfor %}
                 </div>
             </div>
-        {% endfor %}
-    </div>
+            {% endfor %}
+        </div>
+
+
 
     <!-- JavaScript for Week Selection -->
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             // Initialize view by showing the first week by default
             document.getElementById('week-dropdown').selectedIndex = 0;
             showSelectedWeek();
@@ -158,4 +245,5 @@
         });
     </script>
 </body>
+
 </html>

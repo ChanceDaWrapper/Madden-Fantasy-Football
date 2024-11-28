@@ -6,37 +6,104 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All Matchups</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'pages/season_totals.css' %}">
-
+    <!-- Bootstrap CSS -->
 </head>
+<style>
+    body {
+        background-color: #191919 !important;
+        color: white;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('/static/files/christianmccaffrey1.jpg');
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+        opacity: 0.3;
+        z-index: -1;
+    }
+
+    .top-scorers {
+        margin-top: 30px;
+    }
+
+    .positions-list {
+        background: radial-gradient(circle at center, #ccc, #f0f0f0);
+        box-shadow: 3px 5px 31px 0px rgba(0, 0, 0, 0.93);
+        border-radius: 10px;
+        padding: 20px;
+    }
+
+    .player-section {
+        background-color: #ffffff;
+        color: #000000;
+        margin-bottom: 10px;
+        padding: 15px;
+        width: 100%;
+        border-radius: 5px;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease-in-out;
+    }
+
+    .player-section:hover {
+        background-color: #eaeaea;
+        transform: translateY(-5px);
+        cursor: pointer;
+    }
+
+    h1, h2 {
+        color: white;
+    }
+
+    ul {
+        padding: 0;
+        margin: 0;
+        list-style-type: none;
+    }
+
+    .points {
+        color: #19ba18;
+    }
+</style>
 
 <body>
     {% include 'header.html' %}
-    <div class="container">
+    <div class="container-fluid">
         <!-- Top Scorers Section -->
-        <div class="top-scorers">
-            <h1>Top Scorers</h1>
-            <ul>
-                <div class="positions-list">
-                    {% for position, players in season_totals.items %}
-                    <div class="position">
-                        <li><strong>{{ position }}</strong>:
-                            <ul>
-                                {% for player_stat in players %}
-                                <div class="player-section">
-                                    <li><strong><span class="player-info">{{ player_stat.player.name }}</span> - <span
-                                                class="points">{{ player_stat.total_points }} points</span></strong>
-                                    </li>
-                                </div>
-                                {% endfor %}
-                            </ul>
-                        </li>
+        <div class="top-scorers text-center">
+            <h1 class="text-center text-white mb-4 ">Top Scorers</h1>
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+                {% for position, players in season_totals.items %}
+                <div class="col">
+                    <div class="positions-list p-3">
+                        <h2 class="mb-3">Top {{ position }}'s</h2>
+                        <ul class="list-unstyled">
+                            {% for player_stat in players %}
+                            <li class="player-section">
+                                <strong>
+                                    <span class="player-info">{{ player_stat.player.name }}</span> - 
+                                    <span class="points">{{ player_stat.total_points }} points</span>
+                                </strong>
+                            </li>
+                            {% endfor %}
+                        </ul>
                     </div>
-                    {% endfor %}
                 </div>
-            </ul>
+                {% endfor %}
+            </div>
         </div>
     </div>
+
+    <!-- Bootstrap JS -->
 </body>
 
 </html>

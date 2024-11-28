@@ -1,37 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Team Rosters</title>
-        {% load static %}
-        <link rel="stylesheet" href="{% static 'pages/rosters.css' %}">
-    </head>
-    <body>
-        {% include 'header.html' %}
-        
-        <div class="container">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Rosters</title>
+    {% load static %}
+    <!-- Bootstrap CSS -->
+</head>
+<style>
+    body {
+        background-color: #191919 !important;
+        color: white;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('/static/files/christianmccaffrey1.jpg');
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+        opacity: 0.3;
+        z-index: -1;
+    }
+    .custom-shadow {
+        box-shadow: 0 0 12px rgba(255, 255, 255, 0.8); /* Bigger shadow */
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Smooth animation */
+    }
+
+    .custom-shadow:hover {
+        box-shadow: 0 0 12px rgba(255, 255, 255, 0.8); /* Bigger shadow */
+        transform: scale(1.05);
+    }
+
+    #generate-button {
+        box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+    }
+</style>
+<body>
+    {% include 'header.html' %}
+
+    <div class="container py-5">
+        <div class="d-flex justify-content-center mb-4">
             <form action="/generate_schedule">
-                <button class="generate-schedule">Generate New Schedule</button>
+                <button class="btn btn-primary" id="generate-button">Generate New Schedule</button>
             </form>
         </div>
-        <h1>Team Rosters</h1>
-        <div class="container">
+        <div class="d-flex justify-content-center mb-4">
+            <h1 class="text-center text-white">Team Rosters</h1>
+        </div>
+    
+
+        {% if team_rosters %}
+        <div class="row g-4">
             {% for team, positions in team_rosters.items %}
-                <div class="team">
-                    <h2>{{team.name}}</h2>
-                    <ul>
-                        {% for position in positions %}
-                            <li> <strong>{{ position.position }}: </strong> <span class="player-name">{{ position.player|default:'' }}</span></li>
-                        {% empty %}
-                            <li>No Players Assigned</li>
-                        {% endfor %}
-                    </ul>
+            <div class="col-md-4 col-lg-3">
+                <div class="card custom-shadow border-1">
+                    <div class="card-body text-center">
+                        <h3 class="card-title">{{ team.name }}</h3>
+                        <ul class="list-group list-group-flush">
+                            {% for position in positions %}
+                            <li class="list-group-item">
+                                <strong>{{ position.position }}:</strong>
+                                <span class="player-name">{{ position.player|default:"No Player Assigned" }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
                 </div>
-            {% empty %}
-                <h2>No Teams Found.</h2>
+            </div>
             {% endfor %}
         </div>
+        {% else %}
+        <h2 class="text-center mt-5">No Teams Found.</h2>
+        {% endif %}
+    </div>
 
+    <!-- Bootstrap Bundle with Popper -->
+</body>
 
-    </body>
 </html>
